@@ -1,0 +1,40 @@
+<listOfTaskList>
+   <listOfTaskLists class="java.util.ArrayList">
+      <taskList>
+         <id>c6c4b7e3-4d33-4b2b-bb00-c0eaaaa23338</id>
+         <title>TaskList 1</title>
+         <update>2000-12-13T14:00:00.000Z</update>
+         <deleted>false</deleted>
+         <taskList class="java.util.ArrayList">
+            <task>
+               <id>d0b8a2ca-e228-4e0d-a3d3-ccd0e1bfce37</id>
+               <lastSynchOnline>2000-12-13T14:00:00.000Z</lastSynchOnline>
+               <lastModification>2010-10-15T12:00:00.000Z</lastModification>
+               <title>Test</title>
+               <parentTask>0</parentTask>
+               <position>0</position>
+               <notes>Keine Notes</notes>
+               <status>completed</status>
+               <due>2000-12-13T14:00:00.000Z</due>
+               <completed>2000-12-13T14:00:00.000Z</completed>
+               <deleted>false</deleted>
+               <hidden>false</hidden>
+            </task>
+            <task>
+               <id>2490c10e-80d0-412d-9882-e6e6c751a814</id>
+               <lastSynchOnline>2000-12-13T14:00:00.000Z</lastSynchOnline>
+               <lastModification>2010-10-15T12:00:00.000Z</lastModification>
+               <title>Test</title>
+               <parentTask>0</parentTask>
+               <position>0</position>
+               <notes>Keine Notes</notes>
+               <status>completed</status>
+               <due>2000-12-13T14:00:00.000Z</due>
+               <completed>2000-12-13T14:00:00.000Z</completed>
+               <deleted>false</deleted>
+               <hidden>false</hidden>
+            </task>
+         </taskList>
+      </taskList>
+   </listOfTaskLists>
+</listOfTaskList>
