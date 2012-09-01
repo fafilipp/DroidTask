@@ -1,57 +1,55 @@
 package entity;
 
-
-
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
 import org.simpleframework.xml.Element;
 
 public class Task {
-	
-	//Unique ID of a Task
+
+	// Unique ID of a Task
 	@Element
 	private String id;
-	//Timestamp of last Synchronisation with Google
+	// Timestamp of last Synchronisation with Google
 	@Element
 	private String lastSynchOnline;
 	// Timestamp of last Modification offline
 	@Element
 	private String lastModification;
-	//Title of the Task
+	// Title of the Task
 	@Element
 	private String title;
-	//The parent Task if there is some
-	@Element
+	// The parent Task if there is some
+	@Element(required = false)
 	private String parentTask;
-	//The position of the Task, if it is a subtask
+	// The position of the Task, if it is a subtask
 	@Element
 	private String position;
-	//Describing the Task
-	@Element
+	// Describing the Task
+	@Element(required = false)
 	private String notes;
-	//Status of the Task see Enum
+	// Status of the Task see Enum
 	@Element
 	private EStatus status;
-	//Due Date of the Task
-	@Element
+	// Due Date of the Task
+	@Element(required = false)
 	private String due;
-	//Completed Date
-	@Element
+	// Completed Date
+	@Element(required = false)
 	private String completed;
-	//Task deleted
+	// Task deleted
 	@Element
 	private boolean deleted;
-	//Task finished
+	// Task finished
 	@Element
 	private boolean hidden;
 
-	//Constructor
+	// Constructor
 	public Task() {
 		this.setId(java.util.UUID.randomUUID().toString());
 	}
-	
-	//Getter & Setter
+
+	// Getter & Setter
 	public String getId() {
 		return id;
 	}
@@ -65,16 +63,16 @@ public class Task {
 	}
 
 	public void setLastSynchOnline(Timestamp lastSynchOnline) {
-		//Parse Timestamp to Google Format
+		// Parse Timestamp to Google Format
 		this.lastSynchOnline = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(lastSynchOnline);
 	}
 
-	public String getLastModification() {
-		return lastModification;
+	public Timestamp getLastModification() {
+		return java.sql.Timestamp.valueOf(this.lastModification);
 	}
 
-	public void setLastModification(String lastModification) {
-		this.lastModification = lastModification;
+	public void setLastModification(Timestamp lastModification) {
+		this.lastModification = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(lastModification);
 	}
 
 	public String getTitle() {
@@ -148,5 +146,5 @@ public class Task {
 	public void setHidden(boolean hidden) {
 		this.hidden = hidden;
 	}
-	
+
 }

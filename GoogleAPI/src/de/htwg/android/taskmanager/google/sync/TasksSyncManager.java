@@ -3,7 +3,12 @@ package de.htwg.android.taskmanager.google.sync;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
+
+import xml.Marshalling;
 
 import com.google.api.client.auth.oauth2.draft10.AccessTokenResponse;
 import com.google.api.client.googleapis.auth.oauth2.draft10.GoogleAccessProtectedResource;
@@ -16,6 +21,9 @@ import com.google.api.client.json.jackson.JacksonFactory;
 import com.google.api.services.tasks.Tasks;
 import com.google.api.services.tasks.model.Task;
 import com.google.api.services.tasks.model.TaskList;
+
+import entity.EStatus;
+import entity.ListOfTaskList;
 
 @SuppressWarnings("deprecation")
 public class TasksSyncManager {
@@ -106,21 +114,46 @@ public class TasksSyncManager {
 		getGoogleSyncManagerService().tasks().update(taskList.getId(), task.getId(), task).execute();
 	}
 
-	public void deleteTask(TaskList taskList, Task task)  throws IOException {
+	public void deleteTask(TaskList taskList, Task task) throws IOException {
 		getGoogleSyncManagerService().tasks().delete(taskList.getId(), task.getId()).execute();
 	}
 
-	public static void main(String[] args) throws IOException {
+	
+	public static void main(String[] args) throws Exception {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		java.util.Date d = sdf.parse("1970-01-01T00:00:00Z");
 		TasksSyncManager syncManager = new TasksSyncManager();
+		ListOfTaskList listOfTasklist = new ListOfTaskList();
 		List<TaskList> taskLists = syncManager.getAllTasklists();
 		for (TaskList taskList : taskLists) {
-			System.out.println(taskList.getTitle());
+			entity.TaskList eTaskList = new entity.TaskList();
+			listOfTasklist.add_TaskList_To_ListOfTaskLists(eTaskList);
+			eTaskList.setTitle(taskList.getTitle());
+			eTaskList.setUpdate(new Timestamp(d.getTime()));
+			eTaskList.setDeleted(false);
 			List<Task> tasks = syncManager.getAllTasksForTasklist(taskList);
 			for (Task task : tasks) {
-				System.out.println(task.getTitle());
+				entity.Task eTask = new entity.Task();
+				eTask.setLastSynchOnline(new Timestamp(d.getTime()));
+				eTask.setLastModification(new Timestamp(d.getTime()));
+				eTask.setParentTask(task.getParent() == null? "" : task.getParent());
+				eTask.setPosition(task.getPosition());
+				eTask.setTitle(task.getTitle());
+				eTask.setNotes(task.getNotes() == null? "" : task.getNotes());
+				if (task.getStatus().equals("needsAction")) {
+					eTask.setStatus(EStatus.needsAction);
+				} else {
+					eTask.setStatus(EStatus.completed);
+				}
+				eTask.setDue(new Timestamp(d.getTime()));
+				eTask.setCompleted(new Timestamp(d.getTime()));
+				eTask.setDeleted(false);
+				eTask.setHidden(false);
+				eTaskList.addTaskToList(eTask);
 			}
-			System.out.println();
 		}
+		Marshalling m = new Marshalling();
+		m.SaveToXML(listOfTasklist);
 	}
 
 }

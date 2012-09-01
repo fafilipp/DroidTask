@@ -9,11 +9,10 @@ import entity.ListOfTaskList;
 
 public class Unmarshalling {
 
-	public ListOfTaskList getFromXML(){
+	public ListOfTaskList getFromXML() {
 		Serializer serializer = new Persister();
 		File source = new File("example.xml");
 		ListOfTaskList listOfTaskLists = null;
-		
 		try {
 			listOfTaskLists = serializer.read(ListOfTaskList.class, source);
 		} catch (Exception e) {
@@ -21,7 +20,6 @@ public class Unmarshalling {
 			e.printStackTrace();
 		}
 		return listOfTaskLists;
-	}	
+	}
+	
 }
-
-

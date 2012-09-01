@@ -25,5 +25,6 @@
 	<classpathentry kind="lib" path="C:/Users/FFI/Downloads/Google/Tasks/tasks/libs/xpp3-1.1.4c.jar"/>
 	<classpathentry kind="lib" path="C:/Users/FFI/Downloads/Google/Tasks/tasks/google-api-services-tasks-v1-rev3-1.7.2-beta.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/AndroidBackend"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
