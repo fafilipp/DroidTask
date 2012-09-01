@@ -116,19 +116,33 @@ public class Task {
 	}
 
 	public Timestamp getDue() {
+		if(this.due == null) {
+			return null;
+		}
 		return java.sql.Timestamp.valueOf(this.due);
 	}
 
 	public void setDue(Timestamp due) {
-		this.due = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(due);
+		if (due != null) {
+			this.due = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(due);
+		} else {
+			this.due = null;
+		}
 	}
 
 	public Timestamp getCompleted() {
+		if(this.completed == null) {
+			return null;
+		}
 		return java.sql.Timestamp.valueOf(this.completed);
 	}
 
 	public void setCompleted(Timestamp completed) {
-		this.completed = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(completed);
+		if (completed != null) {
+			this.completed = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(completed);
+		} else {
+			this.completed = null;
+		}
 	}
 
 	public boolean isDeleted() {

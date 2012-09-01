@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Timestamp;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
@@ -18,6 +17,7 @@ import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson.JacksonFactory;
+import com.google.api.client.util.DateTime;
 import com.google.api.services.tasks.Tasks;
 import com.google.api.services.tasks.model.Task;
 import com.google.api.services.tasks.model.TaskList;
@@ -27,6 +27,77 @@ import entity.ListOfTaskList;
 
 @SuppressWarnings("deprecation")
 public class TasksSyncManager {
+
+	private Timestamp transformDateTime(DateTime d) {
+		return d != null ? new Timestamp(d.getValue()) : null;
+	}
+
+	private Tasks service;
+
+	public void createXMLforGoogleData() throws Exception {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		java.util.Date lastSyncOnline = sdf.parse("1970-01-01T00:00:00Z");
+
+		ListOfTaskList listOfTasklist = new ListOfTaskList();
+		List<TaskList> taskLists = getAllTasklists();
+		for (TaskList taskList : taskLists) {
+			entity.TaskList eTaskList = new entity.TaskList();
+			listOfTasklist.add_TaskList_To_ListOfTaskLists(eTaskList);
+			eTaskList.setTitle(taskList.getTitle());
+			eTaskList.setUpdate(transformDateTime(taskList.getUpdated()));
+			eTaskList.setDeleted(false);
+			List<Task> tasks = getAllTasksForTasklist(taskList);
+			for (Task task : tasks) {
+				entity.Task eTask = new entity.Task();
+				eTask.setLastSynchOnline(new Timestamp(lastSyncOnline.getTime())); // TODO
+				eTask.setLastModification(transformDateTime(task.getUpdated()));
+				eTask.setParentTask(task.getParent());
+				eTask.setPosition(task.getPosition());
+				eTask.setTitle(task.getTitle());
+				eTask.setNotes(task.getNotes());
+				if (task.getStatus().equals("needsAction")) {
+					eTask.setStatus(EStatus.needsAction);
+				} else {
+					eTask.setStatus(EStatus.completed);
+				}
+				eTask.setDue(transformDateTime(task.getDue()));
+				eTask.setCompleted(transformDateTime(task.getCompleted()));
+				eTask.setDeleted(task.getDeleted() == null ? false : task.getDeleted());
+				eTask.setHidden(task.getHidden() == null ? false : task.getHidden());
+				eTaskList.addTaskToList(eTask);
+			}
+		}
+		Marshalling m = new Marshalling();
+		m.SaveToXML(listOfTasklist);
+	}
+
+	public void deleteTask(TaskList taskList, Task task) throws IOException {
+		getGoogleSyncManagerService().tasks().delete(taskList.getId(), task.getId()).execute();
+	}
+
+	public void deleteTaskList(TaskList taskList) throws IOException {
+		getGoogleSyncManagerService().tasklists().delete(taskList.getId()).execute();
+	}
+
+	public List<TaskList> getAllTasklists() throws IOException {
+		return getGoogleSyncManagerService().tasklists().list().execute().getItems();
+	}
+
+	public List<Task> getAllTasksForTasklist(TaskList taskList) throws IOException {
+		return getGoogleSyncManagerService().tasks().list(taskList.getId()).execute().getItems();
+	}
+
+	private Tasks getGoogleSyncManagerService() {
+		if (service == null) {
+			HttpTransport httpTransport = new NetHttpTransport();
+			JacksonFactory jsonFactory = new JacksonFactory();
+			HttpRequestInitializer accessProtectedResource = getLocalAccess(httpTransport, jsonFactory);
+			Tasks service = new Tasks.Builder(httpTransport, jsonFactory, accessProtectedResource).setApplicationName(
+					"Google-TasksAndroidSample/1.0").build();
+			this.service = service;
+		}
+		return service;
+	}
 
 	private HttpRequestInitializer getLocalAccess(HttpTransport httpTransport, JacksonFactory jsonFactory) {
 		// The clientId and clientSecret are copied from the API Access tab on
@@ -72,88 +143,24 @@ public class TasksSyncManager {
 		return null;
 	}
 
-	private Tasks service;
-
-	private Tasks getGoogleSyncManagerService() {
-		if (service == null) {
-			HttpTransport httpTransport = new NetHttpTransport();
-			JacksonFactory jsonFactory = new JacksonFactory();
-			HttpRequestInitializer accessProtectedResource = getLocalAccess(httpTransport, jsonFactory);
-			Tasks service = new Tasks.Builder(httpTransport, jsonFactory, accessProtectedResource).setApplicationName(
-					"Google-TasksAndroidSample/1.0").build();
-			this.service = service;
-		}
-		return service;
-	}
-
-	public List<TaskList> getAllTasklists() throws IOException {
-		return getGoogleSyncManagerService().tasklists().list().execute().getItems();
-	}
-
-	public List<Task> getAllTasksForTasklist(TaskList taskList) throws IOException {
-		return getGoogleSyncManagerService().tasks().list(taskList.getId()).execute().getItems();
+	public void insertNewTask(TaskList taskList, Task task) throws IOException {
+		getGoogleSyncManagerService().tasks().insert(taskList.getId(), task).execute();
 	}
 
 	public void insertNewTaskList(TaskList taskList) throws IOException {
 		getGoogleSyncManagerService().tasklists().insert(taskList).execute();
 	}
 
-	public void updateTaskList(TaskList taskList) throws IOException {
-		getGoogleSyncManagerService().tasklists().update(taskList.getId(), taskList).execute();
-	}
-
-	public void deleteTaskList(TaskList taskList) throws IOException {
-		getGoogleSyncManagerService().tasklists().delete(taskList.getId()).execute();
-	}
-
-	public void insertNewTask(TaskList taskList, Task task) throws IOException {
-		getGoogleSyncManagerService().tasks().insert(taskList.getId(), task).execute();
-	}
-
 	public void updateTask(TaskList taskList, Task task) throws IOException {
 		getGoogleSyncManagerService().tasks().update(taskList.getId(), task.getId(), task).execute();
 	}
 
-	public void deleteTask(TaskList taskList, Task task) throws IOException {
-		getGoogleSyncManagerService().tasks().delete(taskList.getId(), task.getId()).execute();
+	public void updateTaskList(TaskList taskList) throws IOException {
+		getGoogleSyncManagerService().tasklists().update(taskList.getId(), taskList).execute();
 	}
-
 	
 	public static void main(String[] args) throws Exception {
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-		java.util.Date d = sdf.parse("1970-01-01T00:00:00Z");
 		TasksSyncManager syncManager = new TasksSyncManager();
-		ListOfTaskList listOfTasklist = new ListOfTaskList();
-		List<TaskList> taskLists = syncManager.getAllTasklists();
-		for (TaskList taskList : taskLists) {
-			entity.TaskList eTaskList = new entity.TaskList();
-			listOfTasklist.add_TaskList_To_ListOfTaskLists(eTaskList);
-			eTaskList.setTitle(taskList.getTitle());
-			eTaskList.setUpdate(new Timestamp(d.getTime()));
-			eTaskList.setDeleted(false);
-			List<Task> tasks = syncManager.getAllTasksForTasklist(taskList);
-			for (Task task : tasks) {
-				entity.Task eTask = new entity.Task();
-				eTask.setLastSynchOnline(new Timestamp(d.getTime()));
-				eTask.setLastModification(new Timestamp(d.getTime()));
-				eTask.setParentTask(task.getParent() == null? "" : task.getParent());
-				eTask.setPosition(task.getPosition());
-				eTask.setTitle(task.getTitle());
-				eTask.setNotes(task.getNotes() == null? "" : task.getNotes());
-				if (task.getStatus().equals("needsAction")) {
-					eTask.setStatus(EStatus.needsAction);
-				} else {
-					eTask.setStatus(EStatus.completed);
-				}
-				eTask.setDue(new Timestamp(d.getTime()));
-				eTask.setCompleted(new Timestamp(d.getTime()));
-				eTask.setDeleted(false);
-				eTask.setHidden(false);
-				eTaskList.addTaskToList(eTask);
-			}
-		}
-		Marshalling m = new Marshalling();
-		m.SaveToXML(listOfTasklist);
+		syncManager.createXMLforGoogleData();
 	}
-
 }
