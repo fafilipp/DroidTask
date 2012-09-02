@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 import xml.Marshalling;
@@ -28,42 +27,87 @@ import entity.ListOfTaskList;
 @SuppressWarnings("deprecation")
 public class TasksSyncManager {
 
-	private Timestamp transformDateTime(DateTime d) {
-		return d != null ? new Timestamp(d.getValue()) : null;
+	void syncLocalToGoogle(entity.TaskList taskList) {
+
+	}
+
+	void syncGoogleToLocal(TaskList taskList) {
+
+	}
+
+	void syncLocalToGoogle(entity.Task task) {
+
+	}
+
+	void syncGoogleToLocal(Task task) {
+
+	}
+
+	/**
+	 * Searchs the same remote tasklist for the given localTaskList. The search
+	 * is performed by comparision of the ids.
+	 * 
+	 * @param remote
+	 *            the list of remote Tasklists
+	 * @param localTaskList
+	 *            the local Tasklist
+	 * @return the remote tasklist if it is given, null otherwise
+	 */
+	private TaskList searchRemoteTaskList(List<TaskList> remote, entity.TaskList localTaskList) {
+		TaskList remoteTaskList = null;
+		for (TaskList tmpRemoteTaskList : remote) {
+			if (tmpRemoteTaskList.getId().equals(localTaskList.getID())) {
+				remoteTaskList = tmpRemoteTaskList;
+				break;
+			}
+		}
+		return remoteTaskList;
+	}
+
+	void sync(List<entity.TaskList> local, List<TaskList> remote) {
+		for (entity.TaskList localTaskList : local) {
+			TaskList remoteTaskList = searchRemoteTaskList(remote, localTaskList);
+			// local tasklist is been deleted?
+			
+			
+			// remote tasklist is been deleted? 
+			
+			// new local tasklist created
+			// new remote tasklist created
+			
+			// updated local tasklist
+			// updated remote tasklist
+			// updated both tasklists
+			
+			
+			if(remoteTaskList == null) {
+				// insert the new task list to the remote server
+				// TODO: insert or delete?
+			} else if(localTaskList.getDeleted()){
+				// delete the remote task list.
+			} else {
+				// check modification and sync date and update accordingly the right way
+				// TODO: what should happen if both are been updated?
+			}
+		}
+	}
+
+	public static void main(String[] args) throws Exception {
+		TasksSyncManager syncManager = new TasksSyncManager();
+		syncManager.createXMLforGoogleData();
 	}
 
 	private Tasks service;
 
 	public void createXMLforGoogleData() throws Exception {
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-		java.util.Date lastSyncOnline = sdf.parse("1970-01-01T00:00:00Z");
-
 		ListOfTaskList listOfTasklist = new ListOfTaskList();
 		List<TaskList> taskLists = getAllTasklists();
 		for (TaskList taskList : taskLists) {
-			entity.TaskList eTaskList = new entity.TaskList();
+			entity.TaskList eTaskList = taskListTransformation(taskList);
 			listOfTasklist.add_TaskList_To_ListOfTaskLists(eTaskList);
-			eTaskList.setTitle(taskList.getTitle());
-			eTaskList.setUpdate(transformDateTime(taskList.getUpdated()));
-			eTaskList.setDeleted(false);
 			List<Task> tasks = getAllTasksForTasklist(taskList);
 			for (Task task : tasks) {
-				entity.Task eTask = new entity.Task();
-				eTask.setLastSynchOnline(new Timestamp(lastSyncOnline.getTime())); // TODO
-				eTask.setLastModification(transformDateTime(task.getUpdated()));
-				eTask.setParentTask(task.getParent());
-				eTask.setPosition(task.getPosition());
-				eTask.setTitle(task.getTitle());
-				eTask.setNotes(task.getNotes());
-				if (task.getStatus().equals("needsAction")) {
-					eTask.setStatus(EStatus.needsAction);
-				} else {
-					eTask.setStatus(EStatus.completed);
-				}
-				eTask.setDue(transformDateTime(task.getDue()));
-				eTask.setCompleted(transformDateTime(task.getCompleted()));
-				eTask.setDeleted(task.getDeleted() == null ? false : task.getDeleted());
-				eTask.setHidden(task.getHidden() == null ? false : task.getHidden());
+				entity.Task eTask = taskTransformation(task);
 				eTaskList.addTaskToList(eTask);
 			}
 		}
@@ -151,16 +195,52 @@ public class TasksSyncManager {
 		getGoogleSyncManagerService().tasklists().insert(taskList).execute();
 	}
 
+	public entity.TaskList taskListTransformation(TaskList taskList) {
+		entity.TaskList eTaskList = new entity.TaskList();
+		eTaskList.setTitle(taskList.getTitle());
+		eTaskList.setUpdate(transformDateTime(taskList.getUpdated()));
+		eTaskList.setDeleted(false);
+		return eTaskList;
+	}
+	
+	public TaskList taskListTransformation(entity.TaskList eTaskList) {
+		TaskList taskList = new TaskList();
+		taskList.setId(eTaskList.getID());
+		taskList.setEtag("");
+		taskList.setKind("");
+		taskList.setTitle(eTaskList.getTitle());
+		taskList.setUpdated(new DateTime(eTaskList.getUpdate().getTime()));
+		return taskList;
+	}
+
+	public entity.Task taskTransformation(Task task) {
+		entity.Task eTask = new entity.Task();
+		eTask.setLastModification(transformDateTime(task.getUpdated()));
+		eTask.setParentTask(task.getParent());
+		eTask.setPosition(task.getPosition());
+		eTask.setTitle(task.getTitle());
+		eTask.setNotes(task.getNotes());
+		if (task.getStatus().equals("needsAction")) {
+			eTask.setStatus(EStatus.needsAction);
+		} else {
+			eTask.setStatus(EStatus.completed);
+		}
+		eTask.setDue(transformDateTime(task.getDue()));
+		eTask.setCompleted(transformDateTime(task.getCompleted()));
+		eTask.setDeleted(task.getDeleted() == null ? false : task.getDeleted());
+		eTask.setHidden(task.getHidden() == null ? false : task.getHidden());
+		return eTask;
+	}
+
+	private Timestamp transformDateTime(DateTime d) {
+		return d != null ? new Timestamp(d.getValue()) : null;
+	}
+
 	public void updateTask(TaskList taskList, Task task) throws IOException {
 		getGoogleSyncManagerService().tasks().update(taskList.getId(), task.getId(), task).execute();
 	}
 
 	public void updateTaskList(TaskList taskList) throws IOException {
 		getGoogleSyncManagerService().tasklists().update(taskList.getId(), taskList).execute();
-	}
-	
-	public static void main(String[] args) throws Exception {
-		TasksSyncManager syncManager = new TasksSyncManager();
-		syncManager.createXMLforGoogleData();
 	}
 }

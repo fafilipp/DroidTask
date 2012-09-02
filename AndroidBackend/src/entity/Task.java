@@ -11,7 +11,7 @@ public class Task {
 	@Element
 	private String id;
 	// Timestamp of last Synchronisation with Google
-	@Element
+	@Element(required = false)
 	private String lastSynchOnline;
 	// Timestamp of last Modification offline
 	@Element
@@ -116,7 +116,7 @@ public class Task {
 	}
 
 	public Timestamp getDue() {
-		if(this.due == null) {
+		if (this.due == null) {
 			return null;
 		}
 		return java.sql.Timestamp.valueOf(this.due);
@@ -131,7 +131,7 @@ public class Task {
 	}
 
 	public Timestamp getCompleted() {
-		if(this.completed == null) {
+		if (this.completed == null) {
 			return null;
 		}
 		return java.sql.Timestamp.valueOf(this.completed);
