@@ -63,13 +63,13 @@ public class Main {
 		lotl.addTaskList(taskList);
 
 		Marshalling ma = new Marshalling();
-		ma.SaveToXML(lotl);
+		ma.saveToXML(lotl);
 
 		Unmarshalling uma = new Unmarshalling();
 		ListOfTaskList lotl_uma = uma.getFromXML();
 
 		for (TaskList tasklist_read : lotl_uma.getListOfTaskList()) {
-			System.out.println(tasklist_read.getID());
+			System.out.println(tasklist_read.getId());
 			for (Task task_read : tasklist_read.getTaskList()) {
 				System.out.println(task_read.getId());
 			}

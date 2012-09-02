@@ -9,7 +9,7 @@ import entity.ListOfTaskList;
 
 public class Marshalling {
 
-	public void SaveToXML(ListOfTaskList listOfTaskLists){
+	public void saveToXML(ListOfTaskList listOfTaskLists){
 		Serializer serializer = new Persister();
 		File result = new File("example.xml");
 

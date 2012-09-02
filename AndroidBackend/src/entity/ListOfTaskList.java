@@ -16,10 +16,6 @@ public class ListOfTaskList {
 		getListOfTaskList().add(taskList);
 	}
 
-	public boolean removeTaskList(TaskList taskList) {
-		return getListOfTaskList().remove(taskList);
-	}
-
 	public boolean containsTaskList(TaskList taskList) {
 		return getListOfTaskList().contains(taskList);
 	}
@@ -29,6 +25,10 @@ public class ListOfTaskList {
 			listOfTaskLists = new ArrayList<TaskList>();
 		}
 		return this.listOfTaskLists;
+	}
+
+	public boolean removeTaskList(TaskList taskList) {
+		return getListOfTaskList().remove(taskList);
 	}
 
 }
