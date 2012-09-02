@@ -6,8 +6,6 @@ import java.io.InputStreamReader;
 import java.sql.Timestamp;
 import java.util.List;
 
-import xml.Marshalling;
-
 import com.google.api.client.auth.oauth2.draft10.AccessTokenResponse;
 import com.google.api.client.googleapis.auth.oauth2.draft10.GoogleAccessProtectedResource;
 import com.google.api.client.googleapis.auth.oauth2.draft10.GoogleAccessTokenRequest.GoogleAuthorizationCodeGrant;
@@ -21,8 +19,10 @@ import com.google.api.services.tasks.Tasks;
 import com.google.api.services.tasks.model.Task;
 import com.google.api.services.tasks.model.TaskList;
 
-import entity.EStatus;
-import entity.ListOfTaskList;
+import de.htwg.android.taskmanager.backend.binding.Binding;
+import de.htwg.android.taskmanager.backend.entity.ListOfTaskList;
+import de.htwg.android.taskmanager.backend.util.EStatus;
+
 
 public class TasksSyncHelper {
 
@@ -30,6 +30,7 @@ public class TasksSyncHelper {
 	 * The google task service.
 	 */
 	private Tasks service;
+	private Binding binding;
 
 	/**
 	 * Creates the XML-representation for the current Google data set.
@@ -42,16 +43,15 @@ public class TasksSyncHelper {
 		ListOfTaskList listOfTasklist = new ListOfTaskList();
 		List<TaskList> taskLists = getAllTasklists();
 		for (TaskList taskList : taskLists) {
-			entity.TaskList eTaskList = taskListTransformation(taskList);
+			de.htwg.android.taskmanager.backend.entity.TaskList eTaskList = taskListTransformation(taskList);
 			listOfTasklist.addTaskList(eTaskList);
 			List<Task> tasks = getAllTasksForTasklist(taskList);
 			for (Task task : tasks) {
-				entity.Task eTask = taskTransformation(task);
+				de.htwg.android.taskmanager.backend.entity.Task eTask = taskTransformation(task);
 				eTaskList.addTaskToList(eTask);
 			}
 		}
-		Marshalling m = new Marshalling();
-		m.SaveToXML(listOfTasklist);
+		getBinding().marshall(listOfTasklist);
 	}
 
 	/**
@@ -99,7 +99,38 @@ public class TasksSyncHelper {
 	 *             if the Google authorization fails.
 	 */
 	public List<Task> getAllTasksForTasklist(TaskList taskList) throws IOException {
-		return getGoogleSyncManagerService().tasks().list(taskList.getId()).execute().getItems();
+		return getAllTasksForTasklist(taskList, null);
+	}
+
+	/**
+	 * Retrieves all tasks from the Google Task data set for a given task list.
+	 * 
+	 * @param taskList
+	 *            the corresponding task list for the tasks
+	 * @param lastUpdate
+	 *            filter tasks. get tasks where update is bigger then the given
+	 *            date.
+	 * @throws IOException
+	 *             if the Google authorization fails.
+	 */
+	public List<Task> getAllTasksForTasklist(TaskList taskList, String lastUpdate) throws IOException {
+		com.google.api.services.tasks.Tasks.TasksOperations.List tasksOperations = getGoogleSyncManagerService().tasks().list(
+				taskList.getId());
+		tasksOperations.setShowDeleted(true);
+		tasksOperations.setShowHidden(true);
+		tasksOperations.setUpdatedMin(lastUpdate);
+		return tasksOperations.execute().getItems();
+	}
+
+	/**
+	 * Returns a Singleton for Binding
+	 * @return the binding object
+	 */
+	public Binding getBinding() {
+		if(binding == null) {
+			binding = new Binding();
+		}
+		return binding;
 	}
 
 	/**
@@ -225,10 +256,10 @@ public class TasksSyncHelper {
 	 *            the local represented task list
 	 * @return the Google represented task list
 	 */
-	public TaskList taskListTransformation(entity.TaskList eTaskList) {
+	public TaskList taskListTransformation(de.htwg.android.taskmanager.backend.entity.TaskList eTaskList) {
 		TaskList taskList = new TaskList();
 		taskList.setKind("tasks#taskList");
-		taskList.setId(eTaskList.getID());
+		taskList.setId(eTaskList.getId());
 		taskList.setTitle(eTaskList.getTitle());
 		taskList.setUpdated(transformDateTime(eTaskList.getUpdate()));
 		return taskList;
@@ -242,8 +273,9 @@ public class TasksSyncHelper {
 	 *            the Google represented task list
 	 * @return local represented task list
 	 */
-	public entity.TaskList taskListTransformation(TaskList taskList) {
-		entity.TaskList eTaskList = new entity.TaskList();
+	public de.htwg.android.taskmanager.backend.entity.TaskList taskListTransformation(TaskList taskList) {
+		de.htwg.android.taskmanager.backend.entity.TaskList eTaskList = new de.htwg.android.taskmanager.backend.entity.TaskList();
+		eTaskList.setId(taskList.getId());
 		eTaskList.setTitle(taskList.getTitle());
 		eTaskList.setUpdate(transformDateTime(taskList.getUpdated()));
 		eTaskList.setDeleted(false);
@@ -257,7 +289,7 @@ public class TasksSyncHelper {
 	 *            the local represented task
 	 * @return the Google represented task
 	 */
-	public Task taskTransformation(entity.Task eTask) {
+	public Task taskTransformation(de.htwg.android.taskmanager.backend.entity.Task eTask) {
 		Task task = new Task();
 		task.setKind("tasks#task");
 		task.setId(eTask.getId());
@@ -267,10 +299,10 @@ public class TasksSyncHelper {
 		task.setTitle(eTask.getTitle());
 		task.setNotes(eTask.getNotes());
 		switch (eTask.getStatus()) {
-		case needsAction:
+		case NEEDS_ACTION:
 			task.setStatus("needsAction");
 			break;
-		case completed:
+		case COMPLETED:
 			task.setStatus("completed");
 			break;
 		default:
@@ -290,17 +322,18 @@ public class TasksSyncHelper {
 	 *            the Google represented task
 	 * @return local represented task
 	 */
-	public entity.Task taskTransformation(Task task) {
-		entity.Task eTask = new entity.Task();
+	public de.htwg.android.taskmanager.backend.entity.Task taskTransformation(Task task) {
+		de.htwg.android.taskmanager.backend.entity.Task eTask = new de.htwg.android.taskmanager.backend.entity.Task();
+		eTask.setId(task.getId());
 		eTask.setLastModification(transformDateTime(task.getUpdated()));
 		eTask.setParentTask(task.getParent());
 		eTask.setPosition(task.getPosition());
 		eTask.setTitle(task.getTitle());
 		eTask.setNotes(task.getNotes());
 		if (task.getStatus().equals("needsAction")) {
-			eTask.setStatus(EStatus.needsAction);
+			eTask.setStatus(EStatus.NEEDS_ACTION);
 		} else {
-			eTask.setStatus(EStatus.completed);
+			eTask.setStatus(EStatus.COMPLETED);
 		}
 		eTask.setDue(transformDateTime(task.getDue()));
 		eTask.setCompleted(transformDateTime(task.getCompleted()));

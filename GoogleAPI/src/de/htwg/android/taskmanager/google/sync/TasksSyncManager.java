@@ -1,5 +1,6 @@
 package de.htwg.android.taskmanager.google.sync;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.google.api.services.tasks.model.TaskList;
@@ -13,13 +14,29 @@ public class TasksSyncManager {
 	}
 
 	/**
-	 * local tasklist is been deleted? - local.getDeleted is true
+	 * Searchs the same remote tasklist for the given localTaskList. The search
+	 * is performed by comparision of the ids.
 	 * 
-	 * remote tasklist is been deleted? - remote tasklist doesn't exist -
-	 * lastModification < lastSyncDatum
+	 * @param remote
+	 *            the list of remote Tasklists
+	 * @param localTaskList
+	 *            the local Tasklist
+	 * @return the remote tasklist if it is given, null otherwise
+	 */
+	private TaskList searchRemoteTaskList(List<TaskList> remote, de.htwg.android.taskmanager.backend.entity.TaskList localTaskList) {
+		TaskList remoteTaskList = null;
+		for (TaskList tmpRemoteTaskList : remote) {
+			if (tmpRemoteTaskList.getId().equals(localTaskList.getId())) {
+				remoteTaskList = tmpRemoteTaskList;
+				break;
+			}
+		}
+		return remoteTaskList;
+	}
+
+	/**
 	 * 
-	 * new local tasklist created - remote tasklist doesn't exist -
-	 * lastModification > lastSyncDatum
+	 * 
 	 * 
 	 * new remote tasklist created - local tasklist doesn't exist
 	 * 
@@ -30,10 +47,33 @@ public class TasksSyncManager {
 	 * updated both tasklists --> (Hier was machen???) - local.lastSyncTime <
 	 * local.lastModification and local.lastSyncTime < remote.lastUpdate -
 	 * aktuellerer lastModificationTimeStamp
+	 * @throws IOException 
 	 */
-	void sync(List<entity.TaskList> local, List<TaskList> remote) {
-		for (entity.TaskList localTaskList : local) {
+	void sync(List<de.htwg.android.taskmanager.backend.entity.TaskList> local, List<TaskList> remote) throws IOException {
+		for (de.htwg.android.taskmanager.backend.entity.TaskList localTaskList : local) {
 			TaskList remoteTaskList = searchRemoteTaskList(remote, localTaskList);
+			if(remoteTaskList == null) {
+				remoteTaskList = syncHelper.taskListTransformation(localTaskList);
+				// last sync online is null -> task list will be inserted remotly
+				if(localTaskList.getLastSynchOnline() == null) {
+					syncHelper.insertNewTaskList(remoteTaskList);
+				} else {
+					// remote task list doesn't exist --> remote is deleted or local is new!
+					if(localTaskList.getUpdate().after(localTaskList.getLastSynchOnline())) {
+						// local is new --> lastModification > lastSyncDatum
+						syncHelper.insertNewTaskList(remoteTaskList);
+					} else {
+						// remote is deleted --> lastModification < lastSyncDatum
+						localTaskList.setDeleted(true);
+					}
+				}
+			} else if(localTaskList.isDeleted()) {
+				// local task list has been deleted --> local.isDeleted() is true
+
+			}
+			
+			
+			
 			// local tasklist is been deleted?
 
 			// remote tasklist is been deleted?
@@ -48,7 +88,7 @@ public class TasksSyncManager {
 			if (remoteTaskList == null) {
 				// insert the new task list to the remote server
 				// TODO: insert or delete?
-			} else if (localTaskList.getDeleted()) {
+			} else if (localTaskList.isDeleted()) {
 				// delete the remote task list.
 			} else {
 				// check modification and sync date and update accordingly the
@@ -56,27 +96,6 @@ public class TasksSyncManager {
 				// TODO: what should happen if both are been updated?
 			}
 		}
-	}
-
-	/**
-	 * Searchs the same remote tasklist for the given localTaskList. The search
-	 * is performed by comparision of the ids.
-	 * 
-	 * @param remote
-	 *            the list of remote Tasklists
-	 * @param localTaskList
-	 *            the local Tasklist
-	 * @return the remote tasklist if it is given, null otherwise
-	 */
-	private TaskList searchRemoteTaskList(List<TaskList> remote, entity.TaskList localTaskList) {
-		TaskList remoteTaskList = null;
-		for (TaskList tmpRemoteTaskList : remote) {
-			if (tmpRemoteTaskList.getId().equals(localTaskList.getID())) {
-				remoteTaskList = tmpRemoteTaskList;
-				break;
-			}
-		}
-		return remoteTaskList;
 	}
 
 }
