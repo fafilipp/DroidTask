@@ -1,11 +1,13 @@
-package entity;
+package de.htwg.android.taskmanager.backend.entity;
 
-import static entity.Util.GOOGLE_DATE_FORMAT;
+import static de.htwg.android.taskmanager.backend.util.Util.GOOGLE_DATE_FORMAT;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
 import org.simpleframework.xml.Element;
+
+import de.htwg.android.taskmanager.backend.util.EStatus;
 
 public class Task {
 
@@ -69,7 +71,7 @@ public class Task {
 	public String getId() {
 		return id;
 	}
-
+	
 	public Timestamp getLastModification() {
 		return java.sql.Timestamp.valueOf(this.lastModification);
 	}
@@ -133,7 +135,7 @@ public class Task {
 		this.hidden = hidden;
 	}
 
-	private void setId(String id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 

@@ -1,4 +1,4 @@
-package entity;
+package de.htwg.android.taskmanager.backend.entity;
 
 import java.util.ArrayList;
 import java.util.List;

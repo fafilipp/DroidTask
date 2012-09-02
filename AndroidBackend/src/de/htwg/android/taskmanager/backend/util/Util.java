@@ -1,4 +1,4 @@
-package entity;
+package de.htwg.android.taskmanager.backend.util;
 
 public interface Util {
 

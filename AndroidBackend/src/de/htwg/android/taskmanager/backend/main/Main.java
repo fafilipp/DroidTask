@@ -1,28 +1,28 @@
-package main;
+package de.htwg.android.taskmanager.backend.main;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-import xml.Marshalling;
-import xml.Unmarshalling;
-import entity.EStatus;
-import entity.ListOfTaskList;
-import entity.Task;
-import entity.TaskList;
+import de.htwg.android.taskmanager.backend.binding.Binding;
+import de.htwg.android.taskmanager.backend.binding.MarshallingException;
+import de.htwg.android.taskmanager.backend.entity.ListOfTaskList;
+import de.htwg.android.taskmanager.backend.entity.Task;
+import de.htwg.android.taskmanager.backend.entity.TaskList;
+import de.htwg.android.taskmanager.backend.util.EStatus;
 
 public class Main {
 
 	/**
 	 * @param args
+	 * @throws MarshallingException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws MarshallingException {
 
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		java.util.Date d = null;
 		try {
 			d = sdf.parse("2000-12-13T14:00:00Z");
 		} catch (ParseException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
@@ -33,7 +33,7 @@ public class Main {
 		task.setParentTask("0");
 		task.setPosition("0");
 		task.setNotes("Keine Notes");
-		task.setStatus(EStatus.completed);
+		task.setStatus(EStatus.COMPLETED);
 		task.setDue(new java.sql.Timestamp(d.getTime()));
 		task.setCompleted(new java.sql.Timestamp(d.getTime()));
 		task.setDeleted(false);
@@ -46,7 +46,7 @@ public class Main {
 		task1.setParentTask("0");
 		task1.setPosition("0");
 		task1.setNotes("Keine Notes");
-		task1.setStatus(EStatus.completed);
+		task1.setStatus(EStatus.COMPLETED);
 		task1.setDue(new java.sql.Timestamp(d.getTime()));
 		task1.setCompleted(new java.sql.Timestamp(d.getTime()));
 		task1.setDeleted(false);
@@ -62,11 +62,10 @@ public class Main {
 		ListOfTaskList lotl = new ListOfTaskList();
 		lotl.addTaskList(taskList);
 
-		Marshalling ma = new Marshalling();
-		ma.saveToXML(lotl);
+		Binding binding = new Binding();
+		binding.marshall(lotl);
 
-		Unmarshalling uma = new Unmarshalling();
-		ListOfTaskList lotl_uma = uma.getFromXML();
+		ListOfTaskList lotl_uma = binding.unmarshall();
 
 		for (TaskList tasklist_read : lotl_uma.getListOfTaskList()) {
 			System.out.println(tasklist_read.getId());

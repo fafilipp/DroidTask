@@ -1,6 +1,6 @@
-package entity;
+package de.htwg.android.taskmanager.backend.entity;
 
-import static entity.Util.GOOGLE_DATE_FORMAT;
+import static de.htwg.android.taskmanager.backend.util.Util.GOOGLE_DATE_FORMAT;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -77,7 +77,7 @@ public class TaskList {
 		this.deleted = deleted;
 	}
 
-	private void setId(String id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
