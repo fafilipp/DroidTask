@@ -1,0 +1,94 @@
+<listOfTaskList>
+   <listOfTaskLists class="java.util.ArrayList">
+      <taskList>
+         <id>68afd1dc-5c0a-4848-b7ff-a05a2d33aaaa</id>
+         <title>General</title>
+         <update>2012-08-31T18:36:57.000Z</update>
+         <deleted>false</deleted>
+         <taskList class="java.util.ArrayList">
+            <task>
+               <id>e36f4345-4ea1-4fd3-917d-9f14d8524a61</id>
+               <lastModification>2012-08-31T10:47:43.000Z</lastModification>
+               <title>Test</title>
+               <position>00000000000000001023</position>
+               <status>needsAction</status>
+               <deleted>false</deleted>
+               <hidden>false</hidden>
+            </task>
+         </taskList>
+      </taskList>
+      <taskList>
+         <id>7a06392d-3ac4-4216-a903-545a1e0c59b8</id>
+         <title>Studying</title>
+         <update>2012-08-31T18:36:53.000Z</update>
+         <deleted>false</deleted>
+         <taskList class="java.util.ArrayList">
+            <task>
+               <id>dd55d053-01c4-4bec-9fb4-6b4d6a4c3fa4</id>
+               <lastModification>2012-08-31T18:36:53.000Z</lastModification>
+               <title></title>
+               <position>00000000000097612893</position>
+               <status>needsAction</status>
+               <deleted>false</deleted>
+               <hidden>false</hidden>
+            </task>
+         </taskList>
+      </taskList>
+      <taskList>
+         <id>586be3b4-282f-41dc-906c-0f54d577d279</id>
+         <title>Working</title>
+         <update>2012-08-31T18:36:57.000Z</update>
+         <deleted>false</deleted>
+         <taskList class="java.util.ArrayList">
+            <task>
+               <id>0a283c93-9d88-4690-a385-7ac6644c217e</id>
+               <lastModification>2012-03-15T18:57:30.000Z</lastModification>
+               <title>MeetingPlace Profile</title>
+               <position>00000000000536870911</position>
+               <notes>Id: 4124770
+Passwort: 58650</notes>
+               <status>needsAction</status>
+               <deleted>false</deleted>
+               <hidden>false</hidden>
+            </task>
+            <task>
+               <id>6e6c4ea8-1955-4cd7-8f91-f0476bea2fe5</id>
+               <lastModification>2012-03-15T18:57:31.000Z</lastModification>
+               <title>StandUp</title>
+               <position>00000000001073741823</position>
+               <notes>0041 44 33 30404 / 2330404
+ID: 3834</notes>
+               <status>needsAction</status>
+               <deleted>false</deleted>
+               <hidden>false</hidden>
+            </task>
+            <task>
+               <id>a9e2bb0f-c7ba-4680-896c-d118d8574eb3</id>
+               <lastModification>2012-08-31T18:36:57.000Z</lastModification>
+               <title></title>
+               <position>00000000001610612735</position>
+               <status>needsAction</status>
+               <deleted>false</deleted>
+               <hidden>false</hidden>
+            </task>
+         </taskList>
+      </taskList>
+      <taskList>
+         <id>477baa22-deb4-4e1d-b48f-33f375da0171</id>
+         <title>Mobile List</title>
+         <update>2012-08-31T18:36:40.000Z</update>
+         <deleted>false</deleted>
+         <taskList class="java.util.ArrayList">
+            <task>
+               <id>ddd4c2e1-6c0c-4042-83c7-e40bc4549a49</id>
+               <lastModification>2012-08-31T18:36:40.000Z</lastModification>
+               <title></title>
+               <position>00000000000268435455</position>
+               <status>needsAction</status>
+               <deleted>false</deleted>
+               <hidden>false</hidden>
+            </task>
+         </taskList>
+      </taskList>
+   </listOfTaskLists>
+</listOfTaskList>
