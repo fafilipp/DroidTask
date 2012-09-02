@@ -11,25 +11,23 @@ public class ListOfTaskList {
 	@ElementList
 	private List<TaskList> listOfTaskLists;
 
-	// Constructor
-	public ListOfTaskList() {
-		listOfTaskLists = new ArrayList<TaskList>();
-	}
-
 	// Other Methods
-	public void add_TaskList_To_ListOfTaskLists(TaskList taskList) {
-		listOfTaskLists.add(taskList);
+	public void addTaskList(TaskList taskList) {
+		getListOfTaskList().add(taskList);
 	}
 
-	public boolean remove_TaskList_of_ListOfTaskLists(TaskList taskList) {
-		return listOfTaskLists.remove(taskList);
+	public boolean removeTaskList(TaskList taskList) {
+		return getListOfTaskList().remove(taskList);
 	}
 
-	public boolean contains_TaskList_in_ListOfTaskLists(TaskList taskList) {
-		return listOfTaskLists.contains(taskList);
+	public boolean containsTaskList(TaskList taskList) {
+		return getListOfTaskList().contains(taskList);
 	}
 
 	public List<TaskList> getListOfTaskList() {
+		if(this.listOfTaskLists == null) {
+			listOfTaskLists = new ArrayList<TaskList>();
+		}
 		return this.listOfTaskLists;
 	}
 

@@ -104,7 +104,7 @@ public class TasksSyncManager {
 		List<TaskList> taskLists = getAllTasklists();
 		for (TaskList taskList : taskLists) {
 			entity.TaskList eTaskList = taskListTransformation(taskList);
-			listOfTasklist.add_TaskList_To_ListOfTaskLists(eTaskList);
+			listOfTasklist.addTaskList(eTaskList);
 			List<Task> tasks = getAllTasksForTasklist(taskList);
 			for (Task task : tasks) {
 				entity.Task eTask = taskTransformation(task);

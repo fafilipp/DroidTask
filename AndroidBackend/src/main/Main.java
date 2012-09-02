@@ -60,7 +60,7 @@ public class Main {
 		taskList.addTaskToList(task1);
 
 		ListOfTaskList lotl = new ListOfTaskList();
-		lotl.add_TaskList_To_ListOfTaskLists(taskList);
+		lotl.addTaskList(taskList);
 
 		Marshalling ma = new Marshalling();
 		ma.SaveToXML(lotl);
