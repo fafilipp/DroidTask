@@ -11,7 +11,7 @@ import java.util.concurrent.TimeoutException;
 import de.htwg.android.taskmanager.activity.R;
 import com.google.api.services.tasks.model.TaskList;
 
-import de.htwg.android.taskmanager.google.asynctasks.GetAllTaskListsAsyncTask;
+import de.htwg.android.taskmanager.google.asynctasks.GetTaskListAsyncTask;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
@@ -29,7 +29,7 @@ import java.util.concurrent.TimeoutException;
 import de.htwg.android.taskmanager.activity.R;
 import com.google.api.services.tasks.model.TaskList;
 
-import de.htwg.android.taskmanager.google.asynctasks.GetAllTaskListsAsyncTask;
+import de.htwg.android.taskmanager.google.asynctasks.GetTaskListAsyncTask;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
@@ -54,7 +54,7 @@ public class MainActivity extends Activity {
 			Log.i(LOG_TAG, "no google accounts found");
 		} else {
 			Log.d(LOG_TAG, "account name = " + accounts[0].name);
-	        GetAllTaskListsAsyncTask t = new GetAllTaskListsAsyncTask(this, accounts[0]);
+	        GetTaskListAsyncTask t = new GetTaskListAsyncTask(this, accounts[0]);
 	        AsyncTask<Void, Void, List<TaskList>> asyncTask = t.execute();
 	        Log.i(LOG_TAG, "after execute");
 //	        try {
