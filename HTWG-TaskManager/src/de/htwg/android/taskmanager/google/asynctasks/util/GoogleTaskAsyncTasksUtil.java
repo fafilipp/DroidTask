@@ -31,8 +31,7 @@ public class GoogleTaskAsyncTasksUtil {
 		String token = amFuture.getResult().getString(AccountManager.KEY_AUTHTOKEN);
 
 		Log.d(LOG_TAG, "token == null -> " + (token == null));
-		HttpTransport transport = null;
-		transport = new AndroidHttp().newCompatibleTransport();
+		HttpTransport transport = AndroidHttp.newCompatibleTransport();
 		AccessProtectedResource accessProtectedResource = new GoogleAccessProtectedResource(token);
 		Tasks.Builder builder = new Tasks.Builder(transport, new JacksonFactory(), accessProtectedResource);
 		builder.setApplicationName(APPLICATION_NAME);
