@@ -16,11 +16,14 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson.JacksonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.tasks.Tasks;
+import com.google.api.services.tasks.Tasks.TasksOperations.Insert;
 import com.google.api.services.tasks.model.Task;
 import com.google.api.services.tasks.model.TaskList;
 
 import de.htwg.android.taskmanager.backend.binding.Binding;
-import de.htwg.android.taskmanager.backend.entity.ListOfTaskList;
+import de.htwg.android.taskmanager.backend.entity.LocalTask;
+import de.htwg.android.taskmanager.backend.entity.LocalTaskList;
+import de.htwg.android.taskmanager.backend.entity.LocalTaskLists;
 import de.htwg.android.taskmanager.backend.util.EStatus;
 
 
@@ -40,14 +43,14 @@ public class TasksSyncHelper {
 	 *             authorization.
 	 */
 	public void createXMLforGoogleData() throws Exception {
-		ListOfTaskList listOfTasklist = new ListOfTaskList();
+		LocalTaskLists listOfTasklist = new LocalTaskLists();
 		List<TaskList> taskLists = getAllTasklists();
 		for (TaskList taskList : taskLists) {
-			de.htwg.android.taskmanager.backend.entity.TaskList eTaskList = taskListTransformation(taskList);
+			LocalTaskList eTaskList = taskListTransformation(taskList);
 			listOfTasklist.addTaskList(eTaskList);
 			List<Task> tasks = getAllTasksForTasklist(taskList);
 			for (Task task : tasks) {
-				de.htwg.android.taskmanager.backend.entity.Task eTask = taskTransformation(task);
+				LocalTask eTask = taskTransformation(task);
 				eTaskList.addTaskToList(eTask);
 			}
 		}
@@ -224,8 +227,10 @@ public class TasksSyncHelper {
 	 * @throws IOException
 	 *             if the Google authorization fails.
 	 */
-	public void insertNewTask(TaskList taskList, Task task) throws IOException {
-		getGoogleSyncManagerService().tasks().insert(taskList.getId(), task).execute();
+	public Task insertNewTask(TaskList taskList, LocalTask task) throws IOException {
+		Insert insert = getGoogleSyncManagerService().tasks().insert(taskList.getId(), taskTransformation(task));
+		Task newTask = insert.execute();
+		return newTask;
 	}
 
 	/**
@@ -256,12 +261,12 @@ public class TasksSyncHelper {
 	 *            the local represented task list
 	 * @return the Google represented task list
 	 */
-	public TaskList taskListTransformation(de.htwg.android.taskmanager.backend.entity.TaskList eTaskList) {
+	public TaskList taskListTransformation(LocalTaskList eTaskList) {
 		TaskList taskList = new TaskList();
-		taskList.setKind("tasks#taskList");
-		taskList.setId(eTaskList.getId());
-		taskList.setTitle(eTaskList.getTitle());
-		taskList.setUpdated(transformDateTime(eTaskList.getUpdate()));
+//		taskList.setKind("tasks#taskList");
+//		taskList.setId(eTaskList.getId());
+//		taskList.setTitle(eTaskList.getTitle());
+//		taskList.setUpdated(transformDateTime(eTaskList.getUpdate()));
 		return taskList;
 	}
 
@@ -273,12 +278,12 @@ public class TasksSyncHelper {
 	 *            the Google represented task list
 	 * @return local represented task list
 	 */
-	public de.htwg.android.taskmanager.backend.entity.TaskList taskListTransformation(TaskList taskList) {
-		de.htwg.android.taskmanager.backend.entity.TaskList eTaskList = new de.htwg.android.taskmanager.backend.entity.TaskList();
-		eTaskList.setId(taskList.getId());
-		eTaskList.setTitle(taskList.getTitle());
-		eTaskList.setUpdate(transformDateTime(taskList.getUpdated()));
-		eTaskList.setDeleted(false);
+	public LocalTaskList taskListTransformation(TaskList taskList) {
+		LocalTaskList eTaskList = new LocalTaskList();
+//		eTaskList.setId(taskList.getId());
+//		eTaskList.setTitle(taskList.getTitle());
+//		eTaskList.setUpdate(transformDateTime(taskList.getUpdated()));
+//		eTaskList.setDeleted(false);
 		return eTaskList;
 	}
 
@@ -289,29 +294,24 @@ public class TasksSyncHelper {
 	 *            the local represented task
 	 * @return the Google represented task
 	 */
-	public Task taskTransformation(de.htwg.android.taskmanager.backend.entity.Task eTask) {
+	public Task taskTransformation(LocalTask eTask) {
 		Task task = new Task();
-		task.setKind("tasks#task");
-		task.setId(eTask.getId());
-		task.setUpdated(transformDateTime(eTask.getLastModification()));
-		task.setParent(eTask.getParentTask());
-		task.setPosition(eTask.getPosition());
-		task.setTitle(eTask.getTitle());
-		task.setNotes(eTask.getNotes());
-		switch (eTask.getStatus()) {
-		case NEEDS_ACTION:
-			task.setStatus("needsAction");
-			break;
-		case COMPLETED:
-			task.setStatus("completed");
-			break;
-		default:
-			break;
-		}
-		task.setDue(transformDateTime(eTask.getDue()));
-		task.setCompleted(transformDateTime(eTask.getCompleted()));
-		task.setDeleted(eTask.isDeleted());
-		task.setHidden(eTask.isHidden());
+//		task.setTitle(eTask.getTitle());
+//		task.setNotes(eTask.getNotes());
+//		switch (eTask.getStatus()) {
+//		case NEEDS_ACTION:
+//			task.setStatus("needsAction");
+//			break;
+//		case COMPLETED:
+//			task.setStatus("completed");
+//			task.setCompleted(transformDateTime(eTask.getCompleted()));
+//			break;
+//		default:
+//			break;
+//		}
+//		task.setDue(transformDateTime(eTask.getDue()));
+//		task.setDeleted(eTask.isDeleted());
+//		task.setHidden(eTask.isHidden());
 		return task;
 	}
 
@@ -322,23 +322,23 @@ public class TasksSyncHelper {
 	 *            the Google represented task
 	 * @return local represented task
 	 */
-	public de.htwg.android.taskmanager.backend.entity.Task taskTransformation(Task task) {
-		de.htwg.android.taskmanager.backend.entity.Task eTask = new de.htwg.android.taskmanager.backend.entity.Task();
-		eTask.setId(task.getId());
-		eTask.setLastModification(transformDateTime(task.getUpdated()));
-		eTask.setParentTask(task.getParent());
-		eTask.setPosition(task.getPosition());
-		eTask.setTitle(task.getTitle());
-		eTask.setNotes(task.getNotes());
-		if (task.getStatus().equals("needsAction")) {
-			eTask.setStatus(EStatus.NEEDS_ACTION);
-		} else {
-			eTask.setStatus(EStatus.COMPLETED);
-		}
-		eTask.setDue(transformDateTime(task.getDue()));
-		eTask.setCompleted(transformDateTime(task.getCompleted()));
-		eTask.setDeleted(task.getDeleted() == null ? false : task.getDeleted());
-		eTask.setHidden(task.getHidden() == null ? false : task.getHidden());
+	public LocalTask taskTransformation(Task task) {
+		LocalTask eTask = new LocalTask();
+//		eTask.setId(task.getId());
+//		eTask.setLastModification(transformDateTime(task.getUpdated()));
+//		eTask.setParentTask(task.getParent());
+//		eTask.setPosition(task.getPosition());
+//		eTask.setTitle(task.getTitle());
+//		eTask.setNotes(task.getNotes());
+//		if (task.getStatus().equals("needsAction")) {
+//			eTask.setStatus(EStatus.NEEDS_ACTION);
+//		} else {
+//			eTask.setStatus(EStatus.COMPLETED);
+//		}
+//		eTask.setDue(transformDateTime(task.getDue()));
+//		eTask.setCompleted(transformDateTime(task.getCompleted()));
+//		eTask.setDeleted(task.getDeleted() == null ? false : task.getDeleted());
+//		eTask.setHidden(task.getHidden() == null ? false : task.getHidden());
 		return eTask;
 	}
 

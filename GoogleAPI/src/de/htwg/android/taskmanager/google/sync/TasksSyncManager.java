@@ -23,7 +23,7 @@ public class TasksSyncManager {
 	 *            the local Tasklist
 	 * @return the remote tasklist if it is given, null otherwise
 	 */
-	private TaskList searchRemoteTaskList(List<TaskList> remote, de.htwg.android.taskmanager.backend.entity.TaskList localTaskList) {
+	private TaskList searchRemoteTaskList(List<TaskList> remote, de.htwg.android.taskmanager.backend.entity.LocalTaskList localTaskList) {
 		TaskList remoteTaskList = null;
 		for (TaskList tmpRemoteTaskList : remote) {
 			if (tmpRemoteTaskList.getId().equals(localTaskList.getId())) {
@@ -49,8 +49,8 @@ public class TasksSyncManager {
 	 * aktuellerer lastModificationTimeStamp
 	 * @throws IOException 
 	 */
-	void sync(List<de.htwg.android.taskmanager.backend.entity.TaskList> local, List<TaskList> remote) throws IOException {
-		for (de.htwg.android.taskmanager.backend.entity.TaskList localTaskList : local) {
+	void sync(List<de.htwg.android.taskmanager.backend.entity.LocalTaskList> local, List<TaskList> remote) throws IOException {
+		for (de.htwg.android.taskmanager.backend.entity.LocalTaskList localTaskList : local) {
 			TaskList remoteTaskList = searchRemoteTaskList(remote, localTaskList);
 			if(remoteTaskList == null) {
 				remoteTaskList = syncHelper.taskListTransformation(localTaskList);
