@@ -1,33 +1,46 @@
 package de.htwg.android.taskmanager.backend.binding;
 
 import java.io.File;
+import java.util.Queue;
 
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
-import de.htwg.android.taskmanager.backend.entity.ListOfTaskList;
+import de.htwg.android.taskmanager.backend.change.Change;
+import de.htwg.android.taskmanager.backend.change.ChangeHistory;
+import de.htwg.android.taskmanager.backend.entity.LocalTaskLists;
 
 public class Binding {
 
-	public void marshall(ListOfTaskList listOfTaskLists) throws MarshallingException {
+	private static final String DATA_XML = "data.xml"; 
+	private static final String CHANGE_HISTORY_XML = "change_history.xml"; 
+	
+	public void marshall(LocalTaskLists listOfTaskLists) throws MarshallingException {
 		Serializer serializer = new Persister();
-		File result = new File("example.xml");
+		File dataXml = new File(DATA_XML);
+		File changeHistoryXml = new File(CHANGE_HISTORY_XML);
 		try {
-			serializer.write(listOfTaskLists, result);
+			serializer.write(ChangeHistory.getChangeHistory(), changeHistoryXml);
+			serializer.write(listOfTaskLists, dataXml);
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new MarshallingException(e);
 		}
 	}
 
-	public ListOfTaskList unmarshall() throws MarshallingException {
+	public LocalTaskLists unmarshall() throws MarshallingException {
 		Serializer serializer = new Persister();
-		File source = new File("example.xml");
-		ListOfTaskList listOfTaskLists = null;
+		File dataXml = new File(DATA_XML);
+		File changeHistoryXml = new File(CHANGE_HISTORY_XML);
+		LocalTaskLists listOfTaskLists = null;
+		Queue<Change> changeHistory = null;
 		try {
-			listOfTaskLists = serializer.read(ListOfTaskList.class, source);
+			listOfTaskLists = serializer.read(LocalTaskLists.class, dataXml);
+			changeHistory = serializer.read(Queue.class, changeHistoryXml);
 		} catch (Exception e) {
 			throw new MarshallingException(e);
 		}
+		ChangeHistory.resetChangeHistory(changeHistory);
 		return listOfTaskLists;
 	}
 

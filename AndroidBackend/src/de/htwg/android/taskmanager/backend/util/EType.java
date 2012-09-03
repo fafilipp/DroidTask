@@ -1,7 +1,7 @@
 package de.htwg.android.taskmanager.backend.util;
 
-public enum ETaskListAttributes {
+public enum EType {
 
-	TITLE
+	TASKLIST, TASK
 	
 }
