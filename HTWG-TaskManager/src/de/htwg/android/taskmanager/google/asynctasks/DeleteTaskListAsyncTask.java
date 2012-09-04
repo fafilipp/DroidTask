@@ -36,4 +36,7 @@ public class DeleteTaskListAsyncTask extends AsyncTask<String, Void, Void> {
 		return null;
 	}
 
+	public void deleteTaskList(String taskListId) {
+		 execute(taskListId);
+	}
 }

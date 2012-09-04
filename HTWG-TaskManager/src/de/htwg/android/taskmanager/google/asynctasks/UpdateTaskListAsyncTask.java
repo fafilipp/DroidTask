@@ -1,6 +1,12 @@
 package de.htwg.android.taskmanager.google.asynctasks;
 
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.LOG_TAG;
+import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.MAX_WAIT_TIME;
+import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.MAX_WAIT_TIME_UNIT;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+
 import android.accounts.Account;
 import android.app.Activity;
 import android.os.AsyncTask;
@@ -17,12 +23,24 @@ public class UpdateTaskListAsyncTask extends AsyncTask<TaskList, Void, TaskList>
 	private Account account;
 	private String taskListId;
 	
+	public UpdateTaskListAsyncTask(Activity activity, Account account) {
+		this.activity = activity;
+		this.account = account;
+	}	
 	public UpdateTaskListAsyncTask(Activity activity, Account account, String taskListId) {
 		this.activity = activity;
 		this.account = account;
 		this.taskListId=taskListId;
 	}
 
+	public String getTaskListId() {
+		return taskListId;
+	}
+	
+	public void setTaskListId(String taskListId) {
+		this.taskListId = taskListId;
+	}
+	
 	@Override
 	protected TaskList doInBackground(TaskList... taskList) {
 		TaskList returnTaskList = null;
@@ -38,6 +56,12 @@ public class UpdateTaskListAsyncTask extends AsyncTask<TaskList, Void, TaskList>
 			}
 		}
 		return returnTaskList;
+	}
+	
+	public TaskList updateTaskList(String taskListId, TaskList taskList) throws InterruptedException, ExecutionException, TimeoutException {
+		this.taskListId = taskListId;
+		AsyncTask<TaskList, Void, TaskList> asyncTaskReturn = execute(taskList);
+		return asyncTaskReturn.get(MAX_WAIT_TIME, MAX_WAIT_TIME_UNIT);
 	}
 
 }

@@ -1,8 +1,12 @@
 package de.htwg.android.taskmanager.google.asynctasks;
 
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.LOG_TAG;
+import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.MAX_WAIT_TIME;
+import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.MAX_WAIT_TIME_UNIT;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import android.accounts.Account;
 import android.app.Activity;
@@ -39,4 +43,8 @@ public class GetTaskListAsyncTask extends AsyncTask<Void, Void, List<TaskList>> 
 		return list;
 	}
 
+	public List<TaskList> getTaskLists() throws InterruptedException, ExecutionException, TimeoutException {
+		AsyncTask<Void, Void, List<TaskList>> asyncTaskReturn = execute();
+		return asyncTaskReturn.get(MAX_WAIT_TIME, MAX_WAIT_TIME_UNIT);
+	}
 }
