@@ -1,10 +1,6 @@
 package de.htwg.android.taskmanager.google.sync;
 
 import java.util.Date;
-import java.util.Iterator;
-
-import com.google.api.services.tasks.model.TaskList;
-import com.google.api.services.tasks.model.TaskLists;
 
 import de.htwg.android.taskmanager.backend.binding.Binding;
 import de.htwg.android.taskmanager.backend.binding.MarshallingException;
@@ -13,12 +9,6 @@ import de.htwg.android.taskmanager.backend.entity.LocalTaskList;
 import de.htwg.android.taskmanager.backend.entity.LocalTaskLists;
 
 public class TaskData {
-
-	public LocalTaskLists getAllTasklists() throws MarshallingException {
-		generateDummyData();
-		Binding binding = new Binding();
-		return binding.unmarshall();
-	}
 
 	private LocalTaskLists generateDummyData() throws MarshallingException {
 		LocalTaskLists tls = new LocalTaskLists();
@@ -39,6 +29,12 @@ public class TaskData {
 		Binding binding = new Binding();
 		binding.marshall(tls);
 		return tls;
+	}
+
+	public LocalTaskLists getAllTasklists() throws MarshallingException {
+		generateDummyData();
+		Binding binding = new Binding();
+		return binding.unmarshall();
 	}
 
 }

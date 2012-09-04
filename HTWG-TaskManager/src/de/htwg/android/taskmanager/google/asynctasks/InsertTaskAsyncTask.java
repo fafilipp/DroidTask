@@ -34,14 +34,6 @@ public class InsertTaskAsyncTask extends AsyncTask<Task, Void, Task> {
 		this.taskListId = taskListId;
 	}
 
-	public String getTaskListId() {
-		return taskListId;
-	}
-
-	public void setTaskListId(String taskListId) {
-		this.taskListId = taskListId;
-	}
-
 	@Override
 	protected Task doInBackground(Task... task) {
 		Task returnTask = null;
@@ -59,9 +51,17 @@ public class InsertTaskAsyncTask extends AsyncTask<Task, Void, Task> {
 		return returnTask;
 	}
 
+	public String getTaskListId() {
+		return taskListId;
+	}
+
 	public Task insertTask(String taskListId, Task task) throws InterruptedException, ExecutionException, TimeoutException {
 		this.taskListId = taskListId;
 		AsyncTask<Task, Void, Task> asyncTaskReturn = execute(task);
 		return asyncTaskReturn.get(MAX_WAIT_TIME, MAX_WAIT_TIME_UNIT);
+	}
+
+	public void setTaskListId(String taskListId) {
+		this.taskListId = taskListId;
 	}
 }

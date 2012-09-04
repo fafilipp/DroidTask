@@ -36,22 +36,6 @@ public class UpdateTaskAsyncTask extends AsyncTask<Task, Void, Task> {
 		this.taskId = taskId;
 	}
 
-	public String getTaskListId() {
-		return taskListId;
-	}
-
-	public String getTaskId() {
-		return taskId;
-	}
-
-	public void setTaskId(String taskId) {
-		this.taskId = taskId;
-	}
-
-	public void setTaskListId(String taskListId) {
-		this.taskListId = taskListId;
-	}
-
 	@Override
 	protected Task doInBackground(Task... task) {
 		Task returnTask = null;
@@ -67,6 +51,22 @@ public class UpdateTaskAsyncTask extends AsyncTask<Task, Void, Task> {
 			}
 		}
 		return returnTask;
+	}
+
+	public String getTaskId() {
+		return taskId;
+	}
+
+	public String getTaskListId() {
+		return taskListId;
+	}
+
+	public void setTaskId(String taskId) {
+		this.taskId = taskId;
+	}
+
+	public void setTaskListId(String taskListId) {
+		this.taskListId = taskListId;
 	}
 
 	public Task updateTask(String taskListId, String taskId, Task task) throws InterruptedException, ExecutionException, TimeoutException {

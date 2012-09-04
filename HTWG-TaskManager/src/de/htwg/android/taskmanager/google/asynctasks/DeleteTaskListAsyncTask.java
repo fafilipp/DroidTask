@@ -20,6 +20,10 @@ public class DeleteTaskListAsyncTask extends AsyncTask<String, Void, Void> {
 		this.account = account;
 	}
 
+	public void deleteTaskList(String taskListId) {
+		execute(taskListId);
+	}
+
 	@Override
 	protected Void doInBackground(String... id) {
 		if (id.length == 1 && id[0] != null) {
@@ -34,9 +38,5 @@ public class DeleteTaskListAsyncTask extends AsyncTask<String, Void, Void> {
 			}
 		}
 		return null;
-	}
-
-	public void deleteTaskList(String taskListId) {
-		 execute(taskListId);
 	}
 }
