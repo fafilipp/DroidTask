@@ -21,10 +21,14 @@ public class LocalTaskList {
 	private List<LocalTask> taskList;
 
 	public LocalTaskList() {
-		taskList = new ArrayList<LocalTask>();
-		this.internalId = java.util.UUID.randomUUID().toString();
+		this(java.util.UUID.randomUUID().toString());
 	}
 
+	public LocalTaskList(String internalId) {
+		taskList = new ArrayList<LocalTask>();
+		this.internalId = internalId;
+	}
+	
 	public void addTaskToList(LocalTask task) {
 		taskList.add(task);
 	}
@@ -57,12 +61,20 @@ public class LocalTaskList {
 		return title;
 	}
 
+	public void modifyTitle(String title) {
+		lastModification = new Date().getTime();
+		this.title = title;
+	}
+
 	public void setGoogleId(String googleId) {
 		this.googleId = googleId;
 	}
-
+	
+	public void setLastModification(long lastModification) {
+		this.lastModification = lastModification;
+	}
+	
 	public void setTitle(String title) {
-		lastModification = new Date().getTime();
 		this.title = title;
 	}
 
