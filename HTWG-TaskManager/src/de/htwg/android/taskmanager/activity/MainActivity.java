@@ -1,18 +1,39 @@
 package de.htwg.android.taskmanager.activity;
 
+import android.app.ExpandableListActivity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.View;
+import android.widget.ExpandableListView;
+import android.widget.Toast;
+import de.htwg.android.taskmanager.adapter.TaskListAdapter;
+import de.htwg.android.taskmanager.backend.binding.MarshallingException;
 import de.htwg.android.taskmanager.backend.database.DatabaseHandler;
 import de.htwg.android.taskmanager.backend.entity.LocalTaskList;
+import de.htwg.android.taskmanager.backend.entity.LocalTaskLists;
 import de.htwg.android.taskmanager.google.sync.TaskData;
-import android.app.Activity;
-import android.os.Bundle;
-import android.view.Menu;
 
-public class MainActivity extends Activity {
+public class MainActivity extends ExpandableListActivity {
+
+	private TaskListAdapter listAdapter;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		// Änderung commiten!
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		final TaskData dummyData = new TaskData();
+
+	DatabaseHandler dbHandler = new DatabaseHandler(this);
+
+			listAdapter = new TaskListAdapter(this, dummyData.getAllTasklists(dbHandler)
+					.getListOfTaskList());
+			setListAdapter(listAdapter);
+
+
+			
 
 		// StrictMode.ThreadPolicy policy = new
 		// StrictMode.ThreadPolicy.Builder().permitAll().build();
@@ -35,53 +56,21 @@ public class MainActivity extends Activity {
 		// e.printStackTrace();
 		// }
 		// }
+	}
+	
+	@Override
+	public boolean onChildClick(ExpandableListView parent, View v,
+			int groupPosition, int childPosition, long id) {
+		// TODO Auto-generated method stub
 
-		// try {
-		// DatabaseHandler db = new DatabaseHandler(this);
-		// TaskData td = new TaskData();
-		// Log.i(LOG_TAG, "Start saving data to the database");
-		// for (LocalTaskList tl : td.getAllTasklists().getListOfTaskList()) {
-		// db.addTaskList(tl);
-		// Log.i(LOG_TAG, tl.getTitle());
-		// }
-		// Log.i(LOG_TAG, "Data saved to the database");
-		//
-		// Log.i(LOG_TAG, "Retrieving data from the database");
-		// for (LocalTaskList tl : db.getAllTaskLists()) {
-		// Log.i(LOG_TAG, tl.getInternalId() + " - " + tl.getTitle());
-		// }
-		// Log.i(LOG_TAG, "Retrieving data from the database finished");
-		//
-		// Log.i(LOG_TAG, "Updating title of first tasklist");
-		// LocalTaskList ltl = db.getAllTaskLists().get(0);
-		// ltl.setTitle("New Tasklist title");
-		// db.updateTaskList(ltl);
-		// Log.i(LOG_TAG, "Updating title of first tasklist finished");
-		//
-		// Log.i(LOG_TAG,
-		// "Retrieving data from the database and deleting them");
-		// for (LocalTaskList tl : db.getAllTaskLists()) {
-		// Log.i(LOG_TAG, tl.getInternalId() + " - " + tl.getTitle());
-		// db.deleteTaskList(tl);
-		// }
-		// Log.i(LOG_TAG,
-		// "Retrieving data from the database and deleting them finished");
-		//
-		// Log.i(LOG_TAG, "Retrieving data from the database");
-		// for (LocalTaskList tl : db.getAllTaskLists()) {
-		// Log.i(LOG_TAG, tl.getInternalId() + " - " + tl.getTitle());
-		// }
-		// Log.i(LOG_TAG, "Retrieving data from the database finished");
-		//
-		// } catch (Exception e) {
-		//
-		// }
+		Intent taskView_Intent = new Intent(this, TaskActivity.class);
+		
+		taskView_Intent.putExtra("taskList", groupPosition);
+		taskView_Intent.putExtra("task", childPosition);
+		
+		this.startActivity(taskView_Intent);
 
-		DatabaseHandler dbHandler = new DatabaseHandler(this);
-		TaskData taskData = new TaskData();
-		for(LocalTaskList ltl : taskData.getAllTasklists(dbHandler).getListOfTaskList()) {
-			System.out.println(ltl.getInternalId() + " - " + ltl.getTitle());
-		}
+		return false;
 	}
 
 	@Override
