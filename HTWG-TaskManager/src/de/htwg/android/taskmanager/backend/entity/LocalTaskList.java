@@ -20,7 +20,7 @@ public class LocalTaskList {
 		taskList = new ArrayList<LocalTask>();
 		this.internalId = internalId;
 	}
-	
+
 	public void addTaskToList(LocalTask task) {
 		taskList.add(task);
 	}
@@ -28,9 +28,26 @@ public class LocalTaskList {
 	public boolean containsTaskInList(LocalTask task) {
 		return taskList.contains(task);
 	}
-
+	
 	public boolean deleteTaskOfList(LocalTask task) {
 		return taskList.remove(task);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		LocalTaskList other = (LocalTaskList) obj;
+		if (internalId == null) {
+			if (other.internalId != null)
+				return false;
+		} else if (!internalId.equals(other.internalId))
+			return false;
+		return true;
 	}
 
 	public String getGoogleId() {
@@ -51,6 +68,14 @@ public class LocalTaskList {
 
 	public String getTitle() {
 		return title;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((internalId == null) ? 0 : internalId.hashCode());
+		return result;
 	}
 
 	public void modifyTitle(String title) {

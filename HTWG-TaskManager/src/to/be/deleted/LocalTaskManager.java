@@ -17,10 +17,10 @@ import com.google.api.services.tasks.Tasks;
 import com.google.api.services.tasks.model.Task;
 import com.google.api.services.tasks.model.TaskList;
 
-import de.htwg.android.taskmanager.google.sync.IGoogleTaskManager;
+import de.htwg.android.taskmanager.google.task.api.IGoogleTaskApiManager;
 import de.htwg.android.taskmanager.google.task.api.util.GoogleSyncException;
 
-public class LocalTaskManager implements IGoogleTaskManager {
+public class LocalTaskManager implements IGoogleTaskApiManager {
 
 	private Tasks service;
 
