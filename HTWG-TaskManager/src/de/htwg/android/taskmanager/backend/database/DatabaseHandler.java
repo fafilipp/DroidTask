@@ -8,7 +8,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 import de.htwg.android.taskmanager.backend.entity.LocalTask;
 import de.htwg.android.taskmanager.backend.entity.LocalTaskList;
 import de.htwg.android.taskmanager.backend.util.EStatus;
@@ -169,10 +168,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		return listOfTask;
 	}
 
-	public LocalTask getTaskByGoogleId(int googleId) {
+	public LocalTask getTaskByGoogleId(String googleId) {
 		LocalTask task = null;
 		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor cursor = db.query(TABLE_TASKS, KEYS_TASKS_TABLE, KEY_GOOGLE_ID + "=?", new String[] { String.valueOf(googleId) }, null,
+		Cursor cursor = db.query(TABLE_TASKS, KEYS_TASKS_TABLE, KEY_GOOGLE_ID + "=?", new String[] { googleId }, null,
 				null, null, null);
 		if (cursor != null) {
 			cursor.moveToFirst();
@@ -181,10 +180,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		return task;
 	}
 
-	public LocalTask getTaskByInternalId(int internalId) {
+	public LocalTask getTaskByInternalId(String internalId) {
 		LocalTask task = null;
 		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor cursor = db.query(TABLE_TASKS, KEYS_TASKS_TABLE, KEY_INTERNAL_ID + "=?", new String[] { String.valueOf(internalId) }, null,
+		Cursor cursor = db.query(TABLE_TASKS, KEYS_TASKS_TABLE, KEY_INTERNAL_ID + "=?", new String[] { internalId }, null,
 				null, null, null);
 		if (cursor != null) {
 			cursor.moveToFirst();
@@ -193,10 +192,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		return task;
 	}
 
-	public LocalTaskList getTaskListByGoogleId(int googleId) {
+	public LocalTaskList getTaskListByGoogleId(String googleId) {
 		LocalTaskList taskList = null;
 		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor cursor = db.query(TABLE_TASKLISTS, KEYS_TASKLISTS_TABLE, KEY_GOOGLE_ID + "=?", new String[] { String.valueOf(googleId) },
+		Cursor cursor = db.query(TABLE_TASKLISTS, KEYS_TASKLISTS_TABLE, KEY_GOOGLE_ID + "=?", new String[] { googleId },
 				null, null, null, null);
 		if (cursor != null) {
 			cursor.moveToFirst();
@@ -205,11 +204,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		return taskList;
 	}
 
-	public LocalTaskList getTaskListByInternalId(int internalId) {
+	public LocalTaskList getTaskListByInternalId(String internalId) {
 		LocalTaskList taskList = null;
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor cursor = db.query(TABLE_TASKLISTS, KEYS_TASKLISTS_TABLE, KEY_INTERNAL_ID + "=?",
-				new String[] { String.valueOf(internalId) }, null, null, null, null);
+				new String[] { internalId }, null, null, null, null);
 		if (cursor != null) {
 			cursor.moveToFirst();
 			taskList = createTaskListObject(cursor);
