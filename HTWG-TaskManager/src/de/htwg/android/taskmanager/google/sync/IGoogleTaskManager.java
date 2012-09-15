@@ -5,6 +5,8 @@ import java.util.List;
 import com.google.api.services.tasks.model.Task;
 import com.google.api.services.tasks.model.TaskList;
 
+import de.htwg.android.taskmanager.google.task.api.util.GoogleSyncException;
+
 public interface IGoogleTaskManager {
 
 	public void deleteTask(String taskListId, String taskId) throws GoogleSyncException;

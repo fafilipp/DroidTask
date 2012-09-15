@@ -1,4 +1,4 @@
-package de.htwg.android.taskmanager.google.local;
+package to.be.deleted;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,8 +17,8 @@ import com.google.api.services.tasks.Tasks;
 import com.google.api.services.tasks.model.Task;
 import com.google.api.services.tasks.model.TaskList;
 
-import de.htwg.android.taskmanager.google.sync.GoogleSyncException;
 import de.htwg.android.taskmanager.google.sync.IGoogleTaskManager;
+import de.htwg.android.taskmanager.google.task.api.util.GoogleSyncException;
 
 public class LocalTaskManager implements IGoogleTaskManager {
 

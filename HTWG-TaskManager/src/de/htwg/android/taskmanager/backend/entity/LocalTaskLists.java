@@ -3,16 +3,10 @@ package de.htwg.android.taskmanager.backend.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.simpleframework.xml.Element;
-import org.simpleframework.xml.ElementList;
-
 public class LocalTaskLists {
 
 	// Attributes
-	@ElementList
 	private List<LocalTaskList> listOfTaskLists;
-
-	@Element(required = false)
 	private long lastSuccessfulSync;
 
 	// Other Methods

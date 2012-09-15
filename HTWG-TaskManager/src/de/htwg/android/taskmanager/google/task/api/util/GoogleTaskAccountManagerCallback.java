@@ -1,4 +1,4 @@
-package de.htwg.android.taskmanager.google.asynctasks.util;
+package de.htwg.android.taskmanager.google.task.api.util;
 
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;

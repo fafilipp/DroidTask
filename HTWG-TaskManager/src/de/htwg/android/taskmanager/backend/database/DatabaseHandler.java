@@ -15,7 +15,7 @@ import de.htwg.android.taskmanager.backend.util.EStatus;
 public class DatabaseHandler extends SQLiteOpenHelper {
 
 	// Database Version and Name
-	private static final int DATABASE_VERSION = 1;
+	private static final int DATABASE_VERSION = 3;
 	private static final String DATABASE_NAME = "HTWG_TaskMngr-DB";
 
 	// Table Name
@@ -26,6 +26,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 	private static final String KEY_INTERNAL_ID = "internal_id";
 	private static final String KEY_GOOGLE_ID = "google_id";
 	private static final String KEY_LAST_MODIFICATION = "last_modification";
+	private static final String KEY_DELETE_FLAG = "delete_flag";
 	private static final String KEY_TITLE = "title";
 	private static final String KEY_TASK_NOTES = "notes";
 	private static final String KEY_TASK_STATUS = "status";
@@ -60,6 +61,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
 	private ContentValues createContentValues(LocalTaskList taskList) {
 		ContentValues values = new ContentValues();
+		values.put(KEY_DELETE_FLAG, 0);
 		values.put(KEY_INTERNAL_ID, taskList.getInternalId());
 		values.put(KEY_GOOGLE_ID, taskList.getGoogleId());
 		values.put(KEY_LAST_MODIFICATION, taskList.getLastModification());
@@ -69,6 +71,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
 	private ContentValues createContentValues(LocalTaskList taskList, LocalTask task) {
 		ContentValues values = new ContentValues();
+		values.put(KEY_DELETE_FLAG, 0);
 		values.put(KEY_INTERNAL_ID, task.getInternalId());
 		values.put(KEY_GOOGLE_ID, task.getGoogleId());
 		values.put(KEY_LAST_MODIFICATION, task.getLastModification());
@@ -83,7 +86,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		return values;
 	}
 
-	private LocalTaskList createTaskListObject(Cursor cursor) {
+	private LocalTaskList createLocalTaskListObject(Cursor cursor) {
 		LocalTaskList taskList = new LocalTaskList(cursor.getString(cursor.getColumnIndex(KEY_INTERNAL_ID)));
 		taskList.setGoogleId(cursor.getString(cursor.getColumnIndex(KEY_GOOGLE_ID)));
 		taskList.setLastModification(Long.parseLong(cursor.getString(cursor.getColumnIndex(KEY_LAST_MODIFICATION))));
@@ -93,14 +96,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		}
 		return taskList;
 	}
-
-	private void createTasklistsTable(SQLiteDatabase db) {
-		String CREATE_TASKLISTS_TABLE = "CREATE TABLE " + TABLE_TASKLISTS + "(" + KEY_INTERNAL_ID + " TEXT PRIMARY KEY," + KEY_GOOGLE_ID
-				+ " TEXT UNIQUE," + KEY_LAST_MODIFICATION + " INTEGER," + KEY_TITLE + " TEXT" + ")";
-		db.execSQL(CREATE_TASKLISTS_TABLE);
-	}
-
-	private LocalTask createTaskObject(Cursor cursor) {
+	
+	private LocalTask createLocalTaskObject(Cursor cursor) {
 		LocalTask task = new LocalTask(cursor.getString(cursor.getColumnIndex(KEY_INTERNAL_ID)));
 		task.setGoogleId(cursor.getString(cursor.getColumnIndex(KEY_GOOGLE_ID)));
 		task.setLastModification(Long.parseLong(cursor.getString(cursor.getColumnIndex(KEY_LAST_MODIFICATION))));
@@ -112,44 +109,76 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		return task;
 	}
 
+	private void createTasklistsTable(SQLiteDatabase db) {
+		String CREATE_TASKLISTS_TABLE = "CREATE TABLE " + TABLE_TASKLISTS + "(" + KEY_INTERNAL_ID + " TEXT PRIMARY KEY," + KEY_GOOGLE_ID
+				+ " TEXT UNIQUE," + KEY_LAST_MODIFICATION + " INTEGER," + KEY_TITLE + " TEXT," + KEY_DELETE_FLAG + " INTEGER)";
+		db.execSQL(CREATE_TASKLISTS_TABLE);
+	}
+
 	private void createTasksTable(SQLiteDatabase db) {
 		String CREATE_TASKS_TABLE = "CREATE TABLE " + TABLE_TASKS + "(" + KEY_INTERNAL_ID + " TEXT PRIMARY KEY," + KEY_GOOGLE_ID
 				+ " TEXT UNIQUE," + KEY_LAST_MODIFICATION + " INTEGER," + KEY_TITLE + " TEXT," + KEY_TASK_NOTES + " TEXT,"
 				+ KEY_TASK_STATUS + " TEXT," + KEY_TASK_DUE + " INTEGER," + KEY_TASK_COMPLETED + " INTEGER," + KEY_TASK_TASKLIST_ID
-				+ " INTEGER" + ")";
+				+ " INTEGER," + KEY_DELETE_FLAG + " INTEGER)";
 		db.execSQL(CREATE_TASKS_TABLE);
 	}
 
-	private void deleteAllTasksForTaskList(LocalTaskList taskList) {
+	public void deleteAllTasksForTaskList(String taskListInternalId) {
+		SQLiteDatabase db = this.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put(KEY_DELETE_FLAG, 1);
+		db.update(TABLE_TASKS, values, KEY_TASK_TASKLIST_ID + " = ?", new String[] { taskListInternalId });
+	}
+	
+	public void deleteAllTasksForTaskListFinal(String taskListInternalId) {
 		SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_TASKS, KEY_TASK_TASKLIST_ID + " = ?",
-                new String[] { String.valueOf(taskList.getInternalId()) });
+                new String[] { taskListInternalId  });
         db.close();
 	}
 
-	public void deleteTask(LocalTask task) {
+	public void deleteTask(String taskInternalId) {
+		SQLiteDatabase db = this.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put(KEY_DELETE_FLAG, 1);
+		db.update(TABLE_TASKS, values, KEY_INTERNAL_ID + " = ?", new String[] { taskInternalId });
+	}
+	
+	public void deleteTaskFinal(String taskInternalId) {
 		SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_TASKS, KEY_INTERNAL_ID + " = ?",
-                new String[] { String.valueOf(task.getInternalId()) });
+                new String[] { taskInternalId });
         db.close();
 	}
 
-	public void deleteTaskList(LocalTaskList taskList) {
-		deleteAllTasksForTaskList(taskList);
+	public void deleteTaskList(String taskListInternalId) {
+		deleteAllTasksForTaskList(taskListInternalId);
+		SQLiteDatabase db = this.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put(KEY_DELETE_FLAG, 1);
+		db.update(TABLE_TASKLISTS, values, KEY_INTERNAL_ID + " = ?", new String[] { taskListInternalId });
+	}
+
+	public void deleteTaskListFinal(String taskListInternalId) {
+		deleteAllTasksForTaskListFinal(taskListInternalId);
 		SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_TASKLISTS, KEY_INTERNAL_ID + " = ?",
-                new String[] { String.valueOf(taskList.getInternalId()) });
+                new String[] { String.valueOf(taskListInternalId) });
         db.close();
 	}
-
+	
 	public List<LocalTaskList> getAllTaskLists() {
 		List<LocalTaskList> listOfTaskList = new ArrayList<LocalTaskList>();
 		SQLiteDatabase db = this.getReadableDatabase();
-		String selectQuery = "SELECT * FROM " + TABLE_TASKLISTS;
-		Cursor cursor = db.rawQuery(selectQuery, null);
+		String TABLE = TABLE_TASKLISTS;
+		String[] FIELDS = KEYS_TASKLISTS_TABLE;
+		String WHERE = KEY_DELETE_FLAG + "=?";
+		String[] WHERE_SELECTION = { String.valueOf(0) };
+		Cursor cursor = db.query(TABLE, FIELDS, WHERE, WHERE_SELECTION, null,
+				null, null, null);
 		if (cursor != null && cursor.moveToFirst()) {
 			do {
-				listOfTaskList.add(createTaskListObject(cursor));
+				listOfTaskList.add(createLocalTaskListObject(cursor));
 			} while (cursor.moveToNext());
 		}
 		return listOfTaskList;
@@ -158,11 +187,15 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 	public List<LocalTask> getAllTasks(LocalTaskList taskList) {
 		List<LocalTask> listOfTask = new ArrayList<LocalTask>();
 		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor cursor = db.query(TABLE_TASKS, KEYS_TASKS_TABLE, KEY_TASK_TASKLIST_ID + "=?", new String[] { String.valueOf(taskList.getInternalId()) }, null,
+		String TABLE = TABLE_TASKS;
+		String[] FIELDS = KEYS_TASKS_TABLE;
+		String WHERE = KEY_TASK_TASKLIST_ID + "=? AND " + KEY_DELETE_FLAG + "=?";
+		String[] WHERE_SELECTION = { taskList.getInternalId(), String.valueOf(0) };
+		Cursor cursor = db.query(TABLE, FIELDS, WHERE, WHERE_SELECTION, null,
 				null, null, null);
 		if (cursor != null && cursor.moveToFirst()) {
 			do {
-				listOfTask.add(createTaskObject(cursor));
+				listOfTask.add(createLocalTaskObject(cursor));
 			} while (cursor.moveToNext());
 		}
 		return listOfTask;
@@ -171,11 +204,15 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 	public LocalTask getTaskByGoogleId(String googleId) {
 		LocalTask task = null;
 		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor cursor = db.query(TABLE_TASKS, KEYS_TASKS_TABLE, KEY_GOOGLE_ID + "=?", new String[] { googleId }, null,
+		String TABLE = TABLE_TASKS;
+		String[] FIELDS = KEYS_TASKS_TABLE;
+		String WHERE = KEY_GOOGLE_ID + "=? AND " + KEY_DELETE_FLAG + "=?";
+		String[] WHERE_SELECTION = { googleId, String.valueOf(0) };
+		Cursor cursor = db.query(TABLE, FIELDS, WHERE, WHERE_SELECTION, null,
 				null, null, null);
 		if (cursor != null) {
 			cursor.moveToFirst();
-			task = createTaskObject(cursor);
+			task = createLocalTaskObject(cursor);
 		}
 		return task;
 	}
@@ -183,11 +220,15 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 	public LocalTask getTaskByInternalId(String internalId) {
 		LocalTask task = null;
 		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor cursor = db.query(TABLE_TASKS, KEYS_TASKS_TABLE, KEY_INTERNAL_ID + "=?", new String[] { internalId }, null,
+		String TABLE = TABLE_TASKS;
+		String[] FIELDS = KEYS_TASKS_TABLE;
+		String WHERE = KEY_INTERNAL_ID + "=? AND " + KEY_DELETE_FLAG + "=?";
+		String[] WHERE_SELECTION = { internalId, String.valueOf(0) };
+		Cursor cursor = db.query(TABLE, FIELDS, WHERE, WHERE_SELECTION, null,
 				null, null, null);
 		if (cursor != null) {
 			cursor.moveToFirst();
-			task = createTaskObject(cursor);
+			task = createLocalTaskObject(cursor);
 		}
 		return task;
 	}
@@ -195,11 +236,15 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 	public LocalTaskList getTaskListByGoogleId(String googleId) {
 		LocalTaskList taskList = null;
 		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor cursor = db.query(TABLE_TASKLISTS, KEYS_TASKLISTS_TABLE, KEY_GOOGLE_ID + "=?", new String[] { googleId },
-				null, null, null, null);
+		String TABLE = TABLE_TASKLISTS;
+		String[] FIELDS = KEYS_TASKLISTS_TABLE;
+		String WHERE = KEY_GOOGLE_ID + "=? AND " + KEY_DELETE_FLAG + "=?";
+		String[] WHERE_SELECTION = { googleId, String.valueOf(0) };
+		Cursor cursor = db.query(TABLE, FIELDS, WHERE, WHERE_SELECTION, null,
+				null, null, null);
 		if (cursor != null) {
 			cursor.moveToFirst();
-			taskList = createTaskListObject(cursor);
+			taskList = createLocalTaskListObject(cursor);
 		}
 		return taskList;
 	}
@@ -207,11 +252,15 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 	public LocalTaskList getTaskListByInternalId(String internalId) {
 		LocalTaskList taskList = null;
 		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor cursor = db.query(TABLE_TASKLISTS, KEYS_TASKLISTS_TABLE, KEY_INTERNAL_ID + "=?",
-				new String[] { internalId }, null, null, null, null);
+		String TABLE = TABLE_TASKLISTS;
+		String[] FIELDS = KEYS_TASKLISTS_TABLE;
+		String WHERE = KEY_INTERNAL_ID + "=? AND " + KEY_DELETE_FLAG + "=?";
+		String[] WHERE_SELECTION = { internalId, String.valueOf(0) };
+		Cursor cursor = db.query(TABLE, FIELDS, WHERE, WHERE_SELECTION, null,
+				null, null, null);
 		if (cursor != null) {
 			cursor.moveToFirst();
-			taskList = createTaskListObject(cursor);
+			taskList = createLocalTaskListObject(cursor);
 		}
 		return taskList;
 	}
@@ -240,4 +289,5 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		ContentValues values = createContentValues(taskList);
 		return db.update(TABLE_TASKLISTS, values, KEY_INTERNAL_ID + " = ?", new String[] { taskList.getInternalId() });
 	}
+	
 }

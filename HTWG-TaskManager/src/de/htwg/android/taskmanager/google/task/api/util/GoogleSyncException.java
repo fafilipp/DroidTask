@@ -1,4 +1,4 @@
-package de.htwg.android.taskmanager.google.sync;
+package de.htwg.android.taskmanager.google.task.api.util;
 
 public class GoogleSyncException extends Exception {
 

@@ -4,20 +4,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.simpleframework.xml.Element;
-import org.simpleframework.xml.ElementList;
-
 public class LocalTaskList {
 
-	@Element
 	private String internalId;
-	@Element(required = false)
 	private String googleId;
-	@Element
 	private String title;
-	@Element
 	private long lastModification;
-	@ElementList
 	private List<LocalTask> taskList;
 
 	public LocalTaskList() {

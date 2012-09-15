@@ -2,27 +2,17 @@ package de.htwg.android.taskmanager.backend.entity;
 
 import java.util.Date;
 
-import org.simpleframework.xml.Element;
-
 import de.htwg.android.taskmanager.backend.util.EStatus;
 
 public class LocalTask {
 
-	@Element
 	private String internalId;
-	@Element(required = false)
 	private String googleId;
-	@Element
 	private long lastModification;
-	@Element
 	private String title;
-	@Element(required = false)
 	private String notes;
-	@Element
 	private EStatus status;
-	@Element(required = false)
 	private long due;
-	@Element(required = false)
 	private long completed;
 
 	public LocalTask() {

@@ -1,4 +1,4 @@
-package de.htwg.android.taskmanager.google.asynctasks.util;
+package de.htwg.android.taskmanager.google.task.api.util;
 
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.SERVER_API_KEY;
 

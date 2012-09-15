@@ -1,4 +1,4 @@
-package de.htwg.android.taskmanager.google.asynctasks.util;
+package de.htwg.android.taskmanager.google.task.api.util;
 
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.APPLICATION_NAME;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.AUTH_TOKEN_TYPE;
@@ -22,7 +22,7 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.jackson.JacksonFactory;
 import com.google.api.services.tasks.Tasks;
 
-public class GoogleTaskAsyncTasksUtil {
+public class GoogleTaskApiUtil {
 
 	public Tasks getTasksService(Activity activity, Account account) throws OperationCanceledException, IOException, AuthenticatorException {
 		AccountManager accountManager = AccountManager.get(activity);
