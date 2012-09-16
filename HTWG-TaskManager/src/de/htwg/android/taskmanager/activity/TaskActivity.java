@@ -13,12 +13,12 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import de.htwg.android.taskmanager.backend.database.DatabaseHandler;
 import de.htwg.android.taskmanager.backend.entity.LocalTask;
-import de.htwg.android.taskmanager.google.sync.TaskData;
 
 public class TaskActivity extends Activity {
 
-	private int taskList_pos;
-	private int task_pos;
+	private String task_id;
+	private DatabaseHandler dbHandler;
+	private LocalTask task;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -32,14 +32,10 @@ public class TaskActivity extends Activity {
 		TextView tv_complete = (TextView) findViewById(R.id.completed);
 		TextView tv_status = (TextView) findViewById(R.id.status);
 
-		TaskData myData = new TaskData();
+		task_id = getIntent().getExtras().getString("task_id");
 
-		taskList_pos = getIntent().getExtras().getInt("taskList");
-		task_pos = getIntent().getExtras().getInt("task");
-
-		DatabaseHandler dbHandler = new DatabaseHandler(this);
-		LocalTask task = myData.getAllTasklists(dbHandler).getListOfTaskList()
-				.get(taskList_pos).getTaskList().get(task_pos);
+		dbHandler = new DatabaseHandler(this);
+		task = dbHandler.getTaskByInternalId(task_id);
 		tv_titel.setText(task.getTitle());
 		tv_note.setText(task.getNotes());
 		tv_due.setText(usingDateFormatter(task.getDue()));
@@ -68,15 +64,16 @@ public class TaskActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.delete:
-
+			dbHandler.deleteTask(task.getInternalId());
 			break;
 		case R.id.edit:
 
-			final Intent editTask_Intent = new Intent(TaskActivity.this,
-					de.htwg.android.taskmanager.activity.EditTaskActivity.class);
+			final Intent editTask_Intent = new Intent(
+					TaskActivity.this,
+					de.htwg.android.taskmanager.activity.NewAndEditTaskActivity.class);
 
-			editTask_Intent.putExtra("tasklist", taskList_pos);
-			editTask_Intent.putExtra("task", task_pos);
+			editTask_Intent.putExtra("task_id", task_id);
+			editTask_Intent.putExtra("edit", true);
 
 			startActivity(editTask_Intent);
 
