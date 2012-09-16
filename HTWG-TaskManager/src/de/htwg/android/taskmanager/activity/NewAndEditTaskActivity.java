@@ -55,17 +55,17 @@ public class NewAndEditTaskActivity extends Activity {
 		int hour = tp_due.getCurrentHour();
 		int minute = tp_due.getCurrentMinute();
 
-		task.setTitle(title);
-		task.setNotes(note);
+		task.modifyTitle(title);
+		task.modifyNotes(note);
 		if (completed) {
-			task.setStatus(EStatus.COMPLETED);
-			task.setCompleted(Calendar.getInstance().getTimeInMillis());
+			task.modifyStatus(EStatus.COMPLETED);
+			task.modifyCompleted(Calendar.getInstance().getTimeInMillis());
 		} else {
-			task.setStatus(EStatus.NEEDS_ACTION);
+			task.modifyStatus(EStatus.NEEDS_ACTION);
 		}
 		calendar.set(year, month, day, hour, minute);
 		long timestamp = calendar.getTimeInMillis();
-		task.setDue(timestamp);
+		task.modifyDue(timestamp);
 
 		if (edit) {
 			dbHandler.updateTask(task);

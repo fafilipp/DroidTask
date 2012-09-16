@@ -7,24 +7,6 @@ public enum EStatus {
 	private final static String COMPLETED_STRING = "completed";
 	
 	/**
-	 * Transforms a Google Status (in String representation) into a EStatus
-	 * Object
-	 * 
-	 * @param status
-	 *            the google status (as String)
-	 * @return the EStatus object
-	 */
-	public static EStatus transformStatus(String status) {
-		if (status.equals(NEEDS_ACTION_STRING)) {
-			return EStatus.NEEDS_ACTION;
-		} else if (status.equals(COMPLETED_STRING)) {
-			return EStatus.COMPLETED;
-		} else {
-			return null;
-		}
-	}
-	
-	/**
 	 * Transforms a EStatus String representation (in String representation) into a EStatus
 	 * Object
 	 * 
@@ -40,6 +22,24 @@ public enum EStatus {
 			return NEEDS_ACTION_STRING;
 		} else if (status.equals(EStatus.COMPLETED)) {
 			return COMPLETED_STRING;
+		} else {
+			return null;
+		}
+	}
+	
+	/**
+	 * Transforms a Google Status (in String representation) into a EStatus
+	 * Object
+	 * 
+	 * @param status
+	 *            the google status (as String)
+	 * @return the EStatus object
+	 */
+	public static EStatus transformStatus(String status) {
+		if (status.equals(NEEDS_ACTION_STRING)) {
+			return EStatus.NEEDS_ACTION;
+		} else if (status.equals(COMPLETED_STRING)) {
+			return EStatus.COMPLETED;
 		} else {
 			return null;
 		}

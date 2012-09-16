@@ -3,12 +3,10 @@ package de.htwg.android.taskmanager.adapter;
 import java.util.List;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
-import android.widget.ExpandableListView;
 import android.widget.TextView;
 import de.htwg.android.taskmanager.activity.R;
 import de.htwg.android.taskmanager.backend.entity.LocalTask;
@@ -34,6 +32,12 @@ public class TaskListAdapter extends BaseExpandableListAdapter {
 		return childPosition;
 	}
 
+	public int getChildrenCount(int groupPosition) {
+		// TODO Auto-generated method stub
+
+		return tasklists.get(groupPosition).getTaskList().size();
+	}
+
 	public View getChildView(int groupPosition, int childPosition,
 			boolean isLastChild, View view, ViewGroup parent) {
 		// TODO Auto-generated method stub
@@ -49,12 +53,6 @@ public class TaskListAdapter extends BaseExpandableListAdapter {
 		tv_child_title.setText(localTask.getTitle());
 
 		return view;
-	}
-
-	public int getChildrenCount(int groupPosition) {
-		// TODO Auto-generated method stub
-
-		return tasklists.get(groupPosition).getTaskList().size();
 	}
 
 	public Object getGroup(int groupPosition) {

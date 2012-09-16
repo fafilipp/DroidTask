@@ -155,8 +155,9 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 						remoteTask.setTitle(localTask.getTitle());
 						remoteTask.setNotes(localTask.getNotes());
 						remoteTask.setStatus(EStatus.transformStatus(localTask.getStatus()));
-						remoteTask.setDue(transformDateTime(localTask.getDue()));
-						remoteTask.setCompleted(transformDateTime(localTask.getCompleted()));
+						// TODO: Due and Completed not working for tasks.
+						// remoteTask.setDue(transformDateTime(localTask.getDue()));
+						// remoteTask.setCompleted(transformDateTime(localTask.getCompleted()));
 						// sending update command to tasks api
 						apiManager.updateTask(localTaskList.getGoogleId(), localTask.getGoogleId(), remoteTask);
 					} else {
@@ -184,17 +185,13 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 				remoteTask.setTitle(newLocalTask.getTitle());
 				remoteTask.setNotes(newLocalTask.getNotes());
 				remoteTask.setStatus(EStatus.transformStatus(newLocalTask.getStatus()));
-				// TODO: due and completion date not working atm (to reanalyze).
-//				switch (newLocalTask.getStatus()) {
-//				case COMPLETED:
-//					remoteTask.setCompleted(transformDateTime(newLocalTask.getCompleted()));
-//				case NEEDS_ACTION:
-//					remoteTask.setDue(transformDateTime(newLocalTask.getDue()));
-//				}
+				// TODO: Due and Completed not working for tasks.
+				// remoteTask.setDue(transformDateTime(newLocalTask.getDue()));
+				// remoteTask.setCompleted(transformDateTime(newLocalTask.getCompleted()));
 				Task newRemoteTask = apiManager.insertTask(localTaskList.getGoogleId(), remoteTask);
-				newLocalTask.setGoogleId(remoteTask.getId());
+				newLocalTask.setGoogleId(newRemoteTask.getId());
 				dbHandler.updateTask(newLocalTask);
-				remoteTasks.add(remoteTask);
+				remoteTasks.add(newRemoteTask);
 				Log.d(LOG_TAG, "... new remote task created with id " + newRemoteTask.getId());
 			}
 
@@ -234,6 +231,7 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 	 *         object
 	 * 
 	 */
+	@SuppressWarnings("unused")
 	private DateTime transformDateTime(long d) {
 		return d != 0 ? new DateTime(d) : null;
 	}

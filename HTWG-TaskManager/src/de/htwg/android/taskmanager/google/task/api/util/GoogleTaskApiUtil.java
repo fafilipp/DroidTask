@@ -22,6 +22,7 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.jackson.JacksonFactory;
 import com.google.api.services.tasks.Tasks;
 
+@SuppressWarnings("deprecation")
 public class GoogleTaskApiUtil {
 
 	public Tasks getTasksService(Activity activity, Account account) throws OperationCanceledException, IOException, AuthenticatorException {
