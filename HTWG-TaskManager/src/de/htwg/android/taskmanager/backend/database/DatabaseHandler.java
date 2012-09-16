@@ -199,8 +199,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		SQLiteDatabase db = this.getReadableDatabase();
 		String TABLE = TABLE_TASKS;
 		String[] FIELDS = KEYS_TASKS_TABLE;
-		String WHERE = KEY_GOOGLE_ID + "=? AND " + KEY_DELETE_FLAG + "=?";
-		String[] WHERE_SELECTION = { googleId, String.valueOf(0) };
+		String WHERE = KEY_GOOGLE_ID + "=?";
+		String[] WHERE_SELECTION = { googleId };
 		Cursor cursor = db.query(TABLE, FIELDS, WHERE, WHERE_SELECTION, null, null, null, null);
 		if (cursor != null && cursor.moveToFirst()) {
 			task = createLocalTaskObject(cursor);
@@ -227,8 +227,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		SQLiteDatabase db = this.getReadableDatabase();
 		String TABLE = TABLE_TASKLISTS;
 		String[] FIELDS = KEYS_TASKLISTS_TABLE;
-		String WHERE = KEY_GOOGLE_ID + "=? AND " + KEY_DELETE_FLAG + "=?";
-		String[] WHERE_SELECTION = { googleId, String.valueOf(0) };
+		String WHERE = KEY_GOOGLE_ID + "=?";
+		String[] WHERE_SELECTION = { googleId };
 		Cursor cursor = db.query(TABLE, FIELDS, WHERE, WHERE_SELECTION, null, null, null, null);
 		if (cursor != null && cursor.moveToFirst()) {
 			taskList = createLocalTaskListObject(cursor);

@@ -65,7 +65,8 @@ public class TaskActivity extends Activity {
 		switch (item.getItemId()) {
 		case R.id.delete:
 			dbHandler.deleteTask(task.getInternalId());
-			break;
+			finish();
+			return true;
 		case R.id.edit:
 			Intent editTask_Intent = new Intent(TaskActivity.this, NewAndEditTaskActivity.class);
 			editTask_Intent.putExtra(ACTIVITY_KEY_TASK_ID, task_id);
