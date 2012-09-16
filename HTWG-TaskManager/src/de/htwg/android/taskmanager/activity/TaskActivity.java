@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import de.htwg.android.taskmanager.backend.database.DatabaseHandler;
 import de.htwg.android.taskmanager.backend.entity.LocalTask;
+import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.*;
 
 public class TaskActivity extends Activity {
 
@@ -22,7 +23,6 @@ public class TaskActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.task);
 
@@ -32,7 +32,7 @@ public class TaskActivity extends Activity {
 		TextView tv_complete = (TextView) findViewById(R.id.completed);
 		TextView tv_status = (TextView) findViewById(R.id.status);
 
-		task_id = getIntent().getExtras().getString("task_id");
+		task_id = getIntent().getExtras().getString(ACTIVITY_KEY_TASK_ID);
 
 		dbHandler = new DatabaseHandler(this);
 		task = dbHandler.getTaskByInternalId(task_id);
@@ -67,16 +67,10 @@ public class TaskActivity extends Activity {
 			dbHandler.deleteTask(task.getInternalId());
 			break;
 		case R.id.edit:
-
-			final Intent editTask_Intent = new Intent(
-					TaskActivity.this,
-					de.htwg.android.taskmanager.activity.NewAndEditTaskActivity.class);
-
-			editTask_Intent.putExtra("task_id", task_id);
-			editTask_Intent.putExtra("edit", true);
-
+			Intent editTask_Intent = new Intent(TaskActivity.this, NewAndEditTaskActivity.class);
+			editTask_Intent.putExtra(ACTIVITY_KEY_TASK_ID, task_id);
+			editTask_Intent.putExtra(ACTIVITY_KEY_EDIT, true);
 			startActivity(editTask_Intent);
-
 			return true;
 		}
 		return super.onOptionsItemSelected(item);

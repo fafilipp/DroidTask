@@ -39,6 +39,7 @@ public class NewAndEditTaskActivity extends Activity {
 	private LocalTask task;
 	private boolean edit;
 	private DatabaseHandler dbHandler;
+	private List<LocalTaskList> listTaskList;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -63,45 +64,41 @@ public class NewAndEditTaskActivity extends Activity {
 			task = dbHandler.getTaskByInternalId(task_id);
 			loadTaskData();
 		} else {
+			task = new LocalTask();
 			String title = getIntent().getExtras().getString(ACTIVITY_KEY_TASK_TITLE);
+			task.setTitle(title);
 			et_title.setText(title);
 
-			sp_tasklist.setVisibility(View.VISIBLE);
 			TextView lb_taskList = (TextView) findViewById(R.id.lb_tasklist);
-
 			lb_taskList.setVisibility(View.VISIBLE);
+			sp_tasklist.setVisibility(View.VISIBLE);
 
-			List<LocalTaskList> listTaskList = dbHandler.getTaskLists();;
+			listTaskList = dbHandler.getTaskLists();
 			List<String> list = new ArrayList<String>();
 			for (LocalTaskList taskList : listTaskList) {
 				list.add(taskList.getTitle());
 			}
-
-			ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
-					android.R.layout.simple_spinner_item, list);
-			dataAdapter
-					.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+			ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, list);
+			dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 			sp_tasklist.setAdapter(dataAdapter);
-
 		}
-
-		setDate();
-
 	}
 
 	public void loadTaskData() {
 		calendar.setTimeInMillis(task.getDue());
 		et_title.setText(task.getTitle());
 		et_note.setText(task.getNotes());
-	}
-
-	public void setDate() {
-		dp_due.updateDate(calendar.get(calendar.YEAR),
-				calendar.get(calendar.MONTH),
-				calendar.get(calendar.DAY_OF_MONTH));
-		tp_due.setCurrentHour(calendar.get(calendar.HOUR));
-		tp_due.setCurrentMinute(calendar.get(calendar.MINUTE));
-		
+		switch (task.getStatus()) {
+		case NEEDS_ACTION:
+			cb_completed.setChecked(false);
+			break;
+		case COMPLETED:
+			cb_completed.setChecked(true);
+			break;
+		}
+		dp_due.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+		tp_due.setCurrentHour(calendar.get(Calendar.HOUR));
+		tp_due.setCurrentMinute(calendar.get(Calendar.MINUTE));
 	}
 
 	@Override
@@ -113,50 +110,44 @@ public class NewAndEditTaskActivity extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.add:
-
-			saveOrUpdateTask();
-
+		case R.id.save:
+			addOrUpdateTask();
 			break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
 
-	public void saveOrUpdateTask() {
+	public void addOrUpdateTask() {
 		String title = et_title.getText().toString();
 		if (title.equals("")) {
-			Toast.makeText(this,
-					"Title is empty! Update or Save not possible.",
-					Toast.LENGTH_LONG);
+			Toast.makeText(this, "Title is empty! Add or Update not possible.", Toast.LENGTH_LONG).show();
 			return;
 		}
-
 		String note = et_note.getText().toString();
-
+		boolean completed = cb_completed.isChecked();
 		int day = dp_due.getDayOfMonth();
 		int year = dp_due.getYear();
 		int month = dp_due.getMonth();
 		int hour = tp_due.getCurrentHour();
 		int minute = tp_due.getCurrentMinute();
 
-		calendar.set(year, month, day, hour, minute);
-		long timestamp = calendar.getTimeInMillis();
-
-		if (cb_completed.isChecked()) {
+		task.setTitle(title);
+		task.setNotes(note);
+		if (completed) {
 			task.setStatus(EStatus.COMPLETED);
 			task.setCompleted(Calendar.getInstance().getTimeInMillis());
 		} else {
 			task.setStatus(EStatus.NEEDS_ACTION);
 		}
-
+		calendar.set(year, month, day, hour, minute);
+		long timestamp = calendar.getTimeInMillis();
 		task.setDue(timestamp);
-		task.setNotes(note);
-		task.setTitle(title);
 
-		// TODO: add or update database
-		if (!edit) {
-			String taskList = (String) sp_tasklist.getSelectedItem();
+		if (edit) {
+			dbHandler.updateTask(task);
+		} else {
+			LocalTaskList localTaskList = listTaskList.get(sp_tasklist.getSelectedItemPosition());
+			dbHandler.addTask(localTaskList, task);
 		}
-
 	}
 }
