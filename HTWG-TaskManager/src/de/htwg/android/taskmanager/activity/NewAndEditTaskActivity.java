@@ -1,8 +1,11 @@
 package de.htwg.android.taskmanager.activity;
 
+import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_KEY_EDIT;
+import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_KEY_TASK_ID;
+import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_KEY_TASK_TITLE;
+
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Iterator;
 import java.util.List;
 
 import android.app.Activity;
@@ -21,7 +24,6 @@ import android.widget.Toast;
 import de.htwg.android.taskmanager.backend.database.DatabaseHandler;
 import de.htwg.android.taskmanager.backend.entity.LocalTask;
 import de.htwg.android.taskmanager.backend.entity.LocalTaskList;
-import de.htwg.android.taskmanager.backend.entity.LocalTaskLists;
 import de.htwg.android.taskmanager.backend.util.EStatus;
 
 public class NewAndEditTaskActivity extends Activity {
@@ -44,11 +46,9 @@ public class NewAndEditTaskActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.new_and_edit_task);
 
-		task_id = getIntent().getExtras().getString("task_id");
-		edit = getIntent().getExtras().getBoolean("update");
+		edit = getIntent().getExtras().getBoolean(ACTIVITY_KEY_EDIT);
 
-		DatabaseHandler dbHandler = new DatabaseHandler(this);
-		task = dbHandler.getTaskByInternalId(task_id);
+		dbHandler = new DatabaseHandler(this);
 		calendar = Calendar.getInstance();
 
 		et_title = (EditText) findViewById(R.id.title);
@@ -59,9 +59,11 @@ public class NewAndEditTaskActivity extends Activity {
 		sp_tasklist = (Spinner) findViewById(R.id.tasklist);
 
 		if (edit) {
-			loadTask();
+			task_id = getIntent().getExtras().getString(ACTIVITY_KEY_TASK_ID);
+			task = dbHandler.getTaskByInternalId(task_id);
+			loadTaskData();
 		} else {
-			String title = getIntent().getExtras().getString("title");
+			String title = getIntent().getExtras().getString(ACTIVITY_KEY_TASK_TITLE);
 			et_title.setText(title);
 
 			sp_tasklist.setVisibility(View.VISIBLE);
@@ -69,16 +71,10 @@ public class NewAndEditTaskActivity extends Activity {
 
 			lb_taskList.setVisibility(View.VISIBLE);
 
-			LocalTaskLists taskLists = (LocalTaskLists) dbHandler
-					.getTaskLists();
-			List<LocalTaskList> taskList = taskLists.getListOfTaskList();
+			List<LocalTaskList> listTaskList = dbHandler.getTaskLists();;
 			List<String> list = new ArrayList<String>();
-
-			for (Iterator iterator = taskList.iterator(); iterator.hasNext();) {
-				LocalTaskList localTaskList = (LocalTaskList) iterator.next();
-
-				list.add(localTaskList.getTitle());
-
+			for (LocalTaskList taskList : listTaskList) {
+				list.add(taskList.getTitle());
 			}
 
 			ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
@@ -93,21 +89,19 @@ public class NewAndEditTaskActivity extends Activity {
 
 	}
 
-	public void loadTask() {
+	public void loadTaskData() {
 		calendar.setTimeInMillis(task.getDue());
+		et_title.setText(task.getTitle());
+		et_note.setText(task.getNotes());
 	}
 
 	public void setDate() {
-
 		dp_due.updateDate(calendar.get(calendar.YEAR),
 				calendar.get(calendar.MONTH),
 				calendar.get(calendar.DAY_OF_MONTH));
 		tp_due.setCurrentHour(calendar.get(calendar.HOUR));
 		tp_due.setCurrentMinute(calendar.get(calendar.MINUTE));
-
-		et_title.setText(task.getTitle());
-		et_note.setText(task.getNotes());
-
+		
 	}
 
 	@Override
@@ -129,9 +123,7 @@ public class NewAndEditTaskActivity extends Activity {
 	}
 
 	public void saveOrUpdateTask() {
-
 		String title = et_title.getText().toString();
-
 		if (title.equals("")) {
 			Toast.makeText(this,
 					"Title is empty! Update or Save not possible.",
@@ -140,11 +132,6 @@ public class NewAndEditTaskActivity extends Activity {
 		}
 
 		String note = et_note.getText().toString();
-		if (note.equals("")) {
-			Toast.makeText(this, "Note is empty! Update or Save not possible.",
-					Toast.LENGTH_LONG);
-			return;
-		}
 
 		int day = dp_due.getDayOfMonth();
 		int year = dp_due.getYear();
@@ -157,7 +144,7 @@ public class NewAndEditTaskActivity extends Activity {
 
 		if (cb_completed.isChecked()) {
 			task.setStatus(EStatus.COMPLETED);
-			task.setCompleted(calendar.getInstance().getTimeInMillis());
+			task.setCompleted(Calendar.getInstance().getTimeInMillis());
 		} else {
 			task.setStatus(EStatus.NEEDS_ACTION);
 		}
@@ -166,8 +153,7 @@ public class NewAndEditTaskActivity extends Activity {
 		task.setNotes(note);
 		task.setTitle(title);
 
-		// TO DO neu und update fehlen noch
-
+		// TODO: add or update database
 		if (!edit) {
 			String taskList = (String) sp_tasklist.getSelectedItem();
 		}

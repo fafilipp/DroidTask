@@ -2,6 +2,7 @@ package de.htwg.android.taskmanager.google.task.api;
 
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.LOG_TAG;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.accounts.Account;
@@ -57,6 +58,7 @@ public class GoogleTaskApiManager implements IGoogleTaskApiManager {
 			Tasks service = asyncUtil.getTasksService(activity, account);
 			Log.d(LOG_TAG, "getting all task lists");
 			List<TaskList> list = service.tasklists().list().execute().getItems();
+			list = list == null? new ArrayList<TaskList>() : list;
 			Log.d(LOG_TAG, "getting all task lists succeeded (size = " + list.size() + ")");
 			return list;
 		} catch (Exception e) {
@@ -71,6 +73,7 @@ public class GoogleTaskApiManager implements IGoogleTaskApiManager {
 			Tasks service = asyncUtil.getTasksService(activity, account);
 			Log.d(LOG_TAG, "getting all tasks for tasklist " + taskListId);
 			List<Task> taskList = service.tasks().list(taskListId).execute().getItems();
+			taskList = taskList == null? new ArrayList<Task>() : taskList;
 			Log.d(LOG_TAG, "getting all task lists succeeded (size = " + taskList.size() + ")");
 			return taskList;
 		} catch (Exception e) {

@@ -15,7 +15,7 @@ import de.htwg.android.taskmanager.backend.util.EStatus;
 public class DatabaseHandler extends SQLiteOpenHelper {
 
 	// Database Version and Name
-	private static final int DATABASE_VERSION = 3;
+	private static final int DATABASE_VERSION = 4;
 	private static final String DATABASE_NAME = "HTWG_TaskMngr-DB";
 
 	// Table Name

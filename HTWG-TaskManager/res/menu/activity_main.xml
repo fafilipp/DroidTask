@@ -6,9 +6,14 @@
         android:showAsAction="always"
         android:title="@string/preferences"/>
     <item
+        android:id="@+id/sync"
+        android:icon="@android:drawable/ic_menu_send"
+        android:showAsAction="always"
+        android:title="@string/sync"/>
+    <item
         android:id="@+id/add"
         android:icon="@android:drawable/ic_menu_add"
         android:showAsAction="always"
         android:title="@string/add"/>
-
+    
 </menu>

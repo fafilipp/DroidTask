@@ -12,10 +12,11 @@
     <string name="edit">edit</string>
     <string name="save">save</string>
     <string name="add">add</string>
+    <string name="sync">sync</string>
     <string name="delete">delete</string>
     <string name="task">Task</string>
     <string name="tasklist">Tasklist</string>
     <string name="lb_tasklist">Tasklist:</string>
-    <string name="cb_completed">Completed?</string>
+    <string name="cb_completed">Completed</string>
 
 </resources>

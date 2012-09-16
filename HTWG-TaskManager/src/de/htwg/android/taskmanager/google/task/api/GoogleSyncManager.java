@@ -86,7 +86,7 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 					// updating remote tasklist, due local timestamp is bigger
 					remoteTaskList.setTitle(localTaskList.getTitle());
 					// sending update command to tasks api
-					apiManager.updateTaskList(localTaskList.getGoogleId(), remoteTaskList);
+					remoteTaskList = apiManager.updateTaskList(localTaskList.getGoogleId(), remoteTaskList);
 				} else {
 					Log.d(LOG_TAG, "... the local tasklist is older. Syncing the Google tasklist to the database.");
 					// updating local tasklist, due remote timestamp is bigger
@@ -105,6 +105,7 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 			TaskList remoteTaskList = apiManager.insertTaskList(newLocalTaskList.getTitle());
 			newLocalTaskList.setGoogleId(remoteTaskList.getId());
 			dbHandler.updateTaskList(newLocalTaskList);
+			remoteTaskLists.add(remoteTaskList);
 			Log.d(LOG_TAG, "... new remote tasklist created with id " + remoteTaskList.getId());
 		}
 
@@ -188,6 +189,7 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 				Task newRemoteTask = apiManager.insertTask(localTaskList.getGoogleId(), remoteTask);
 				newLocalTask.setGoogleId(remoteTask.getId());
 				dbHandler.updateTask(newLocalTask);
+				remoteTasks.add(remoteTask);
 				Log.d(LOG_TAG, "... new remote task created with id " + newRemoteTask.getId());
 			}
 

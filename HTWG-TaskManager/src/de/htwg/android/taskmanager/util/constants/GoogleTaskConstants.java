@@ -9,4 +9,12 @@ public interface GoogleTaskConstants {
 	String APPLICATION_NAME = "HTWG-Konstanz - Task Manager";
 	String LOG_TAG = "htwg-taskmanager";
 
+	String ACTIVITY_KEY_EDIT = "is-edit";
+	String ACTIVITY_KEY_TASK_TITLE = "task-title";
+	String ACTIVITY_KEY_TASK_ID = "task-id";
+	
+	String ACTIVITY_DIALOG_CANCEL = "Cancel";
+	String ACTIVITY_DIALOG_ADD = "Add";
+	String ACTIVITY_LAYOUT_DUE = "Due date:";
+	String ACTIVITY_LAYOUT_COMPLETION = "Completion date:";
 }
