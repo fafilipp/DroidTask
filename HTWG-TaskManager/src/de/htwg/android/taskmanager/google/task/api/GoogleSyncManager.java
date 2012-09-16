@@ -44,6 +44,24 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 		return null;
 	}
 
+	private Task searchRemoteTaskForLocalTask(List<Task> remoteTasks, LocalTask localTask) {
+		for (Task remoteTask : remoteTasks) {
+			if (remoteTask.getId().equals(localTask.getGoogleId())) {
+				return remoteTask;
+			}
+		}
+		return null;
+	}
+
+	private TaskList searchRemoteTaskListForLocalTaskList(List<TaskList> remoteTaskLists, LocalTaskList localTaskList) {
+		for (TaskList remoteTaskList : remoteTaskLists) {
+			if (remoteTaskList.getId().equals(localTaskList.getGoogleId())) {
+				return remoteTaskList;
+			}
+		}
+		return null;
+	}
+
 	private void startSyncTaskLists(DatabaseHandler dbHandler, GoogleTaskApiManager apiManager) throws GoogleSyncException {
 		List<TaskList> remoteTaskLists = apiManager.getTaskLists();
 		List<LocalTaskList> deletedLocalTaskLists = dbHandler.getDeletedTaskLists();
@@ -126,15 +144,13 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 					newLocalTask.setCompleted(transformDateTime(remoteTask.getCompleted()));
 					// Saving the task to the database
 					dbHandler.addTask(localTaskList, newLocalTask);
-					Log.d(LOG_TAG,
-							"... local task for " + remoteTask.getId() + " created with id " + newLocalTask.getInternalId());
+					Log.d(LOG_TAG, "... local task for " + remoteTask.getId() + " created with id " + newLocalTask.getInternalId());
 				} else if (!deletedLocalTasks.contains(localTask)) {
-					Log.d(LOG_TAG,
-							"Local task for " + remoteTask.getId() + " found in database (id=" + localTask.getInternalId()
-									+ ")");
+					Log.d(LOG_TAG, "Local task for " + remoteTask.getId() + " found in database (id=" + localTask.getInternalId() + ")");
 					if (localTask.getLastModification() > transformDateTime(remoteTask.getUpdated())) {
 						Log.d(LOG_TAG, "... the local task is newer. Syncing it to Google Tasks.");
-						// updating remote tasklist, due local timestamp is bigger
+						// updating remote tasklist, due local timestamp is
+						// bigger
 						remoteTask.setTitle(localTask.getTitle());
 						remoteTask.setNotes(localTask.getNotes());
 						remoteTask.setStatus(EStatus.transformStatus(localTask.getStatus()));
@@ -144,7 +160,8 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 						apiManager.updateTask(localTaskList.getGoogleId(), localTask.getGoogleId(), remoteTask);
 					} else {
 						Log.d(LOG_TAG, "... the local task is older. Syncing the Google task to the database.");
-						// updating local tasklist, due remote timestamp is bigger
+						// updating local tasklist, due remote timestamp is
+						// bigger
 						localTask.setGoogleId(remoteTask.getId());
 						localTask.setLastModification(transformDateTime(remoteTask.getUpdated()));
 						localTask.setTitle(remoteTask.getTitle());
@@ -161,8 +178,7 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 			List<LocalTask> newLocalTasks = dbHandler.getTasksWithoutGoogleId(localTaskList);
 			Log.d(LOG_TAG, "Found " + newLocalTasks.size() + " tasks to sync to the Google server.");
 			for (LocalTask newLocalTask : newLocalTasks) {
-				Log.d(LOG_TAG, "Creating new remote task (" + newLocalTask.getTitle() + "/" + newLocalTask.getInternalId()
-						+ ")");
+				Log.d(LOG_TAG, "Creating new remote task (" + newLocalTask.getTitle() + "/" + newLocalTask.getInternalId() + ")");
 				Task remoteTask = new Task();
 				remoteTask.setTitle(newLocalTask.getTitle());
 				remoteTask.setNotes(newLocalTask.getNotes());
@@ -180,8 +196,7 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 			List<LocalTask> localTasks = dbHandler.getTasks(localTaskList);
 			for (LocalTask localTask : localTasks) {
 				if (searchRemoteTaskForLocalTask(remoteTasks, localTask) == null) {
-					Log.d(LOG_TAG, "No remote task found for local task " + localTask.getInternalId()
-							+ " ... deleting it locally.");
+					Log.d(LOG_TAG, "No remote task found for local task " + localTask.getInternalId() + " ... deleting it locally.");
 					dbHandler.deleteTask(localTask.getInternalId());
 				}
 			}
@@ -189,24 +204,6 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 			// TODO: remote delete case is too risky, so no remote delete done
 			// at this point.
 		}
-	}
-
-	private TaskList searchRemoteTaskListForLocalTaskList(List<TaskList> remoteTaskLists, LocalTaskList localTaskList) {
-		for (TaskList remoteTaskList : remoteTaskLists) {
-			if (remoteTaskList.getId().equals(localTaskList.getGoogleId())) {
-				return remoteTaskList;
-			}
-		}
-		return null;
-	}
-	
-	private Task searchRemoteTaskForLocalTask(List<Task> remoteTasks, LocalTask localTask) {
-		for (Task remoteTask : remoteTasks) {
-			if (remoteTask.getId().equals(localTask.getGoogleId())) {
-				return remoteTask;
-			}
-		}
-		return null;
 	}
 
 	/**
