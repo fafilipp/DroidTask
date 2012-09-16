@@ -184,8 +184,13 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 				remoteTask.setTitle(newLocalTask.getTitle());
 				remoteTask.setNotes(newLocalTask.getNotes());
 				remoteTask.setStatus(EStatus.transformStatus(newLocalTask.getStatus()));
-				remoteTask.setDue(transformDateTime(newLocalTask.getDue()));
-				remoteTask.setCompleted(transformDateTime(newLocalTask.getCompleted()));
+				// TODO: due and completion date not working atm (to reanalyze).
+//				switch (newLocalTask.getStatus()) {
+//				case COMPLETED:
+//					remoteTask.setCompleted(transformDateTime(newLocalTask.getCompleted()));
+//				case NEEDS_ACTION:
+//					remoteTask.setDue(transformDateTime(newLocalTask.getDue()));
+//				}
 				Task newRemoteTask = apiManager.insertTask(localTaskList.getGoogleId(), remoteTask);
 				newLocalTask.setGoogleId(remoteTask.getId());
 				dbHandler.updateTask(newLocalTask);

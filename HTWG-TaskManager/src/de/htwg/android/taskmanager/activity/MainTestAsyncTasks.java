@@ -30,6 +30,15 @@ public class MainTestAsyncTasks extends ExpandableListActivity {
 	private List<LocalTaskList> localTaskList;
 	
 	@Override
+	public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+		Intent taskView_Intent = new Intent(this, TaskActivity.class);
+		LocalTask currentTask = localTaskList.get(groupPosition).getTaskList().get(childPosition);
+		taskView_Intent.putExtra("task", currentTask.getInternalId());
+		this.startActivity(taskView_Intent);
+		return false;
+	}
+
+	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
@@ -70,15 +79,6 @@ public class MainTestAsyncTasks extends ExpandableListActivity {
 		listAdapter = new TaskListAdapter(this, localTaskList);
 		setListAdapter(listAdapter);
 		
-	}
-
-	@Override
-	public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-		Intent taskView_Intent = new Intent(this, TaskActivity.class);
-		LocalTask currentTask = localTaskList.get(groupPosition).getTaskList().get(childPosition);
-		taskView_Intent.putExtra("task", currentTask.getInternalId());
-		this.startActivity(taskView_Intent);
-		return false;
 	}
 
 	@Override

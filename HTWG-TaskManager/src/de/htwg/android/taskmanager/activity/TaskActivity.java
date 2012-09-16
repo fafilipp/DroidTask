@@ -1,5 +1,9 @@
 package de.htwg.android.taskmanager.activity;
 
+import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_KEY_EDIT;
+import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_KEY_TASK_ID;
+import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQUEST_CODE_EDIT_ACTIVITY;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -13,13 +17,19 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import de.htwg.android.taskmanager.backend.database.DatabaseHandler;
 import de.htwg.android.taskmanager.backend.entity.LocalTask;
-import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.*;
-
 public class TaskActivity extends Activity {
 
 	private String task_id;
 	private DatabaseHandler dbHandler;
 	private LocalTask task;
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if(requestCode == REQUEST_CODE_EDIT_ACTIVITY) {
+			finish();
+		}
+		super.onActivityResult(requestCode, resultCode, data);
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -44,16 +54,6 @@ public class TaskActivity extends Activity {
 
 	}
 
-	private String usingDateFormatter(long input) {
-		Date date = new Date(input);
-		Calendar cal = new GregorianCalendar();
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MMM/dd hh:mm:ss z");
-		sdf.setCalendar(cal);
-		cal.setTime(date);
-		return sdf.format(date);
-
-	}
-
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.task, menu);
@@ -70,9 +70,20 @@ public class TaskActivity extends Activity {
 			Intent editTask_Intent = new Intent(TaskActivity.this, NewAndEditTaskActivity.class);
 			editTask_Intent.putExtra(ACTIVITY_KEY_TASK_ID, task_id);
 			editTask_Intent.putExtra(ACTIVITY_KEY_EDIT, true);
-			startActivity(editTask_Intent);
+			startActivityForResult(editTask_Intent, REQUEST_CODE_EDIT_ACTIVITY);
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
+	
+	private String usingDateFormatter(long input) {
+		Date date = new Date(input);
+		Calendar cal = new GregorianCalendar();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MMM/dd hh:mm:ss z");
+		sdf.setCalendar(cal);
+		cal.setTime(date);
+		return sdf.format(date);
+
+	}
 }
+

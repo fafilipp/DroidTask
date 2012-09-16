@@ -41,6 +41,60 @@ public class NewAndEditTaskActivity extends Activity {
 	private DatabaseHandler dbHandler;
 	private List<LocalTaskList> listTaskList;
 
+	public void addOrUpdateTask() {
+		String title = et_title.getText().toString();
+		if (title.equals("")) {
+			Toast.makeText(this, "Title is empty! Add or Update not possible.", Toast.LENGTH_LONG).show();
+			return;
+		}
+		String note = et_note.getText().toString();
+		boolean completed = cb_completed.isChecked();
+		int day = dp_due.getDayOfMonth();
+		int year = dp_due.getYear();
+		int month = dp_due.getMonth();
+		int hour = tp_due.getCurrentHour();
+		int minute = tp_due.getCurrentMinute();
+
+		task.setTitle(title);
+		task.setNotes(note);
+		if (completed) {
+			task.setStatus(EStatus.COMPLETED);
+			task.setCompleted(Calendar.getInstance().getTimeInMillis());
+		} else {
+			task.setStatus(EStatus.NEEDS_ACTION);
+		}
+		calendar.set(year, month, day, hour, minute);
+		long timestamp = calendar.getTimeInMillis();
+		task.setDue(timestamp);
+
+		if (edit) {
+			dbHandler.updateTask(task);
+		} else {
+			LocalTaskList localTaskList = listTaskList.get(sp_tasklist.getSelectedItemPosition());
+			dbHandler.addTask(localTaskList, task);
+		}
+		
+		// finish acitivity
+		finish();
+	}
+
+	public void loadTaskData() {
+		calendar.setTimeInMillis(task.getDue());
+		et_title.setText(task.getTitle());
+		et_note.setText(task.getNotes());
+		switch (task.getStatus()) {
+		case NEEDS_ACTION:
+			cb_completed.setChecked(false);
+			break;
+		case COMPLETED:
+			cb_completed.setChecked(true);
+			break;
+		}
+		dp_due.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+		tp_due.setCurrentHour(calendar.get(Calendar.HOUR));
+		tp_due.setCurrentMinute(calendar.get(Calendar.MINUTE));
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -84,23 +138,6 @@ public class NewAndEditTaskActivity extends Activity {
 		}
 	}
 
-	public void loadTaskData() {
-		calendar.setTimeInMillis(task.getDue());
-		et_title.setText(task.getTitle());
-		et_note.setText(task.getNotes());
-		switch (task.getStatus()) {
-		case NEEDS_ACTION:
-			cb_completed.setChecked(false);
-			break;
-		case COMPLETED:
-			cb_completed.setChecked(true);
-			break;
-		}
-		dp_due.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
-		tp_due.setCurrentHour(calendar.get(Calendar.HOUR));
-		tp_due.setCurrentMinute(calendar.get(Calendar.MINUTE));
-	}
-
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.edit_task, menu);
@@ -115,39 +152,5 @@ public class NewAndEditTaskActivity extends Activity {
 			break;
 		}
 		return super.onOptionsItemSelected(item);
-	}
-
-	public void addOrUpdateTask() {
-		String title = et_title.getText().toString();
-		if (title.equals("")) {
-			Toast.makeText(this, "Title is empty! Add or Update not possible.", Toast.LENGTH_LONG).show();
-			return;
-		}
-		String note = et_note.getText().toString();
-		boolean completed = cb_completed.isChecked();
-		int day = dp_due.getDayOfMonth();
-		int year = dp_due.getYear();
-		int month = dp_due.getMonth();
-		int hour = tp_due.getCurrentHour();
-		int minute = tp_due.getCurrentMinute();
-
-		task.setTitle(title);
-		task.setNotes(note);
-		if (completed) {
-			task.setStatus(EStatus.COMPLETED);
-			task.setCompleted(Calendar.getInstance().getTimeInMillis());
-		} else {
-			task.setStatus(EStatus.NEEDS_ACTION);
-		}
-		calendar.set(year, month, day, hour, minute);
-		long timestamp = calendar.getTimeInMillis();
-		task.setDue(timestamp);
-
-		if (edit) {
-			dbHandler.updateTask(task);
-		} else {
-			LocalTaskList localTaskList = listTaskList.get(sp_tasklist.getSelectedItemPosition());
-			dbHandler.addTask(localTaskList, task);
-		}
 	}
 }

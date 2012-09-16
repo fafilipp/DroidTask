@@ -7,6 +7,8 @@ import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACT
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_KEY_TASK_TITLE;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.GOOGLE_ACCOUNT_TYPE;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.LOG_TAG;
+import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQUEST_CODE_NEW_ACTIVITY;
+import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQUEST_CODE_SHOW_ACTIVITY;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -40,6 +42,66 @@ public class MainActivity extends ExpandableListActivity {
 	private DatabaseHandler dbHandler;
 	private TaskListAdapter listAdapter;
 
+	private void addNewTaskList(String title) {
+		LocalTaskList taskList = new LocalTaskList();
+		taskList.setTitle(title);
+		dbHandler.addTaskList(taskList);
+	}
+
+	private void createAddDialog() {
+		AlertDialog.Builder addDialog = new AlertDialog.Builder(this);
+		LayoutInflater layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		View view = layoutInflater.inflate(R.layout.add_dialog, null);
+		final RadioGroup rg_type = (RadioGroup) view.findViewById(R.id.rg_new_type);
+		final EditText et_title = (EditText) view.findViewById(R.id.et_title);
+
+		rg_type.check(R.id.rb_task);
+		addDialog.setCancelable(true);
+
+		addDialog.setNegativeButton(ACTIVITY_DIALOG_CANCEL, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+			}
+		});
+
+		addDialog.setPositiveButton(ACTIVITY_DIALOG_ADD, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				if (rg_type.getCheckedRadioButtonId() == R.id.rb_task) {
+					Intent editTask_Intent = new Intent(MainActivity.this, NewAndEditTaskActivity.class);
+					editTask_Intent.putExtra(ACTIVITY_KEY_EDIT, false);
+					editTask_Intent.putExtra(ACTIVITY_KEY_TASK_TITLE, et_title.getText().toString());
+					startActivityForResult(editTask_Intent, REQUEST_CODE_NEW_ACTIVITY);
+				} else if (rg_type.getCheckedRadioButtonId() == R.id.rb_tasklist) {
+					addNewTaskList(et_title.getText().toString());
+					reloadTaskList();
+				}
+			}
+		});
+		addDialog.create();
+		addDialog.setView(view);
+		addDialog.show();
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == REQUEST_CODE_NEW_ACTIVITY) {
+			reloadTaskList();
+		}
+		if (requestCode == REQUEST_CODE_SHOW_ACTIVITY) {
+			reloadTaskList();
+		}
+		super.onActivityResult(requestCode, resultCode, data);
+	}
+
+	@Override
+	public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+		Intent taskView_Intent = new Intent(this, TaskActivity.class);
+		LocalTask task = (LocalTask) listAdapter.getChild(groupPosition, childPosition);
+		taskView_Intent.putExtra(ACTIVITY_KEY_TASK_ID, task.getInternalId());
+		this.startActivityForResult(taskView_Intent, REQUEST_CODE_SHOW_ACTIVITY);
+		return true;
+	}
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -53,20 +115,6 @@ public class MainActivity extends ExpandableListActivity {
 
 		listAdapter = new TaskListAdapter(this, dbHandler.getTaskLists());
 		setListAdapter(listAdapter);
-	}
-
-	private void reloadTaskList() {
-		listAdapter = new TaskListAdapter(this, dbHandler.getTaskLists());
-		setListAdapter(listAdapter);
-	}
-
-	@Override
-	public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-		Intent taskView_Intent = new Intent(this, TaskActivity.class);
-		LocalTask task = (LocalTask) listAdapter.getChild(groupPosition, childPosition);
-		taskView_Intent.putExtra(ACTIVITY_KEY_TASK_ID, task.getInternalId());
-		this.startActivity(taskView_Intent);
-		return true;
 	}
 
 	@Override
@@ -92,6 +140,11 @@ public class MainActivity extends ExpandableListActivity {
 		return super.onOptionsItemSelected(item);
 	}
 
+	private void reloadTaskList() {
+		listAdapter = new TaskListAdapter(this, dbHandler.getTaskLists());
+		setListAdapter(listAdapter);
+	}
+
 	private void startSync() {
 		AccountManager accountManager = AccountManager.get(this);
 		Account[] accounts = accountManager.getAccountsByType(GOOGLE_ACCOUNT_TYPE);
@@ -112,46 +165,6 @@ public class MainActivity extends ExpandableListActivity {
 				Log.d(LOG_TAG, "TimeoutException catched while waiting for Sync response.");
 			}
 		}
-	}
-
-	private void createAddDialog() {
-		AlertDialog.Builder addDialog = new AlertDialog.Builder(this);
-		LayoutInflater layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		View view = layoutInflater.inflate(R.layout.add_dialog, null);
-		final RadioGroup rg_type = (RadioGroup) view.findViewById(R.id.rg_new_type);
-		final EditText et_title = (EditText) view.findViewById(R.id.et_title);
-
-		rg_type.check(R.id.rb_task);
-		addDialog.setCancelable(true);
-
-		addDialog.setNegativeButton(ACTIVITY_DIALOG_CANCEL, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int which) {
-				dialog.dismiss();
-			}
-		});
-
-		addDialog.setPositiveButton(ACTIVITY_DIALOG_ADD, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int which) {
-				if (rg_type.getCheckedRadioButtonId() == R.id.rb_task) {
-					Intent editTask_Intent = new Intent(MainActivity.this, NewAndEditTaskActivity.class);
-					editTask_Intent.putExtra(ACTIVITY_KEY_EDIT, false);
-					editTask_Intent.putExtra(ACTIVITY_KEY_TASK_TITLE, et_title.getText().toString());
-					startActivity(editTask_Intent);
-				} else if (rg_type.getCheckedRadioButtonId() == R.id.rb_tasklist) {
-					addNewTaskList(et_title.getText().toString());
-					reloadTaskList();
-				}
-			}
-		});
-		addDialog.create();
-		addDialog.setView(view);
-		addDialog.show();
-	}
-
-	private void addNewTaskList(String title) {
-		LocalTaskList taskList = new LocalTaskList();
-		taskList.setTitle(title);
-		dbHandler.addTaskList(taskList);
 	}
 
 }
