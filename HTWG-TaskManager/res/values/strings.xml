@@ -1,6 +1,4 @@
 <resources>
-
-    <string name="title_activity_main">HTWG-Task Manager</string>
     <string name="app_name">HTWG-Task Manager</string>
     <string name="preferences">Preferences</string>
     <string name="title">Title:</string>
@@ -17,5 +15,4 @@
     <string name="tasklist">Tasklist</string>
     <string name="lb_tasklist">Tasklist:</string>
     <string name="cb_completed">Completed</string>
-
 </resources>
