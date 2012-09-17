@@ -19,7 +19,7 @@ import de.htwg.android.taskmanager.backend.database.DatabaseHandler;
 import de.htwg.android.taskmanager.backend.entity.LocalTask;
 public class TaskActivity extends Activity {
 
-	private String task_id;
+	private String taskInternalId;
 	private DatabaseHandler dbHandler;
 	private LocalTask task;
 
@@ -36,21 +36,21 @@ public class TaskActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.task);
 
-		TextView tv_titel = (TextView) findViewById(R.id.title);
-		TextView tv_note = (TextView) findViewById(R.id.notes);
-		TextView tv_due = (TextView) findViewById(R.id.due);
-		TextView tv_complete = (TextView) findViewById(R.id.completed);
-		TextView tv_status = (TextView) findViewById(R.id.status);
+		TextView tvTitel = (TextView) findViewById(R.id.title);
+		TextView tvNote = (TextView) findViewById(R.id.notes);
+		TextView tvDue = (TextView) findViewById(R.id.due);
+		TextView tvComplete = (TextView) findViewById(R.id.completed);
+		TextView tvStatus = (TextView) findViewById(R.id.status);
 
-		task_id = getIntent().getExtras().getString(ACTIVITY_KEY_TASK_ID);
+		taskInternalId = getIntent().getExtras().getString(ACTIVITY_KEY_TASK_ID);
 
 		dbHandler = new DatabaseHandler(this);
-		task = dbHandler.getTaskByInternalId(task_id);
-		tv_titel.setText(task.getTitle());
-		tv_note.setText(task.getNotes());
-		tv_due.setText(usingDateFormatter(task.getDue()));
-		tv_complete.setText(usingDateFormatter(task.getCompleted()));
-		tv_status.setText(task.getStatus().toString());
+		task = dbHandler.getTaskByInternalId(taskInternalId);
+		tvTitel.setText(task.getTitle());
+		tvNote.setText(task.getNotes());
+		tvDue.setText(usingDateFormatter(task.getDue()));
+		tvComplete.setText(usingDateFormatter(task.getCompleted()));
+		tvStatus.setText(task.getStatus().toString());
 
 	}
 
@@ -68,10 +68,10 @@ public class TaskActivity extends Activity {
 			finish();
 			return true;
 		case R.id.edit:
-			Intent editTask_Intent = new Intent(TaskActivity.this, NewAndEditTaskActivity.class);
-			editTask_Intent.putExtra(ACTIVITY_KEY_TASK_ID, task_id);
-			editTask_Intent.putExtra(ACTIVITY_KEY_EDIT, true);
-			startActivityForResult(editTask_Intent, REQUEST_CODE_EDIT_ACTIVITY);
+			Intent editTaskIntent = new Intent(TaskActivity.this, NewAndEditTaskActivity.class);
+			editTaskIntent.putExtra(ACTIVITY_KEY_TASK_ID, taskInternalId);
+			editTaskIntent.putExtra(ACTIVITY_KEY_EDIT, true);
+			startActivityForResult(editTaskIntent, REQUEST_CODE_EDIT_ACTIVITY);
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -79,10 +79,10 @@ public class TaskActivity extends Activity {
 	
 	private String usingDateFormatter(long input) {
 		Date date = new Date(input);
-		Calendar cal = new GregorianCalendar();
+		Calendar calendar = new GregorianCalendar();
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MMM/dd hh:mm:ss z");
-		sdf.setCalendar(cal);
-		cal.setTime(date);
+		sdf.setCalendar(calendar);
+		calendar.setTime(date);
 		return sdf.format(date);
 
 	}

@@ -30,7 +30,6 @@ public class GoogleTaskApiUtil {
 		AccountManagerFuture<Bundle> amFuture = accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, null, activity,
 				new GoogleTaskAccountManagerCallback(), null);
 		String token = amFuture.getResult().getString(AccountManager.KEY_AUTHTOKEN);
-
 		Log.d(LOG_TAG, "token == null -> " + (token == null));
 		HttpTransport transport = AndroidHttp.newCompatibleTransport();
 		AccessProtectedResource accessProtectedResource = new GoogleAccessProtectedResource(token);

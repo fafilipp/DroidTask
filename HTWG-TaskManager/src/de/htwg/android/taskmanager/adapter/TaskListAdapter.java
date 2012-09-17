@@ -23,74 +23,52 @@ public class TaskListAdapter extends BaseExpandableListAdapter {
 	}
 
 	public Object getChild(int groupPosition, int childPosition) {
-		// TODO Auto-generated method stub
 		return tasklists.get(groupPosition).getTaskList().get(childPosition);
 	}
 
 	public long getChildId(int groupPosition, int childPosition) {
-		// TODO Auto-generated method stub
 		return childPosition;
 	}
 
 	public int getChildrenCount(int groupPosition) {
-		// TODO Auto-generated method stub
-
 		return tasklists.get(groupPosition).getTaskList().size();
 	}
 
-	public View getChildView(int groupPosition, int childPosition,
-			boolean isLastChild, View view, ViewGroup parent) {
-		// TODO Auto-generated method stub
-
-		LocalTask localTask = tasklists.get(groupPosition).getTaskList()
-				.get(childPosition);
-
-		LayoutInflater inflater = (LayoutInflater) context
-				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+	public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View view, ViewGroup parent) {
+		LocalTask localTask = tasklists.get(groupPosition).getTaskList().get(childPosition);
+		LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		view = inflater.inflate(R.layout.child_row, null);
-
-		TextView tv_child_title = (TextView) view.findViewById(R.id.grp_child);
-		tv_child_title.setText(localTask.getTitle());
-
+		TextView tvChildTitle = (TextView) view.findViewById(R.id.grp_child);
+		tvChildTitle.setText(localTask.getTitle());
 		return view;
 	}
 
 	public Object getGroup(int groupPosition) {
-		// TODO Auto-generated method stub
 		return tasklists.get(groupPosition);
 	}
 
 	public int getGroupCount() {
-		// TODO Auto-generated method stub
 		return tasklists.size();
 	}
 
 	public long getGroupId(int groupPosition) {
-		// TODO Auto-generated method stub
 		return groupPosition;
 	}
 
-	public View getGroupView(int groupPosition, boolean isLastGroup, View view,
-			ViewGroup parent) {
-		// TODO Auto-generated method stub
+	public View getGroupView(int groupPosition, boolean isLastGroup, View view, ViewGroup parent) {
 		LocalTaskList tasklist = tasklists.get(groupPosition);
-		LayoutInflater inflater = (LayoutInflater) context
-				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		view = inflater.inflate(R.layout.group_row, null);
-
-		TextView tv_group_title = (TextView) view.findViewById(R.id.grp_name);
-		tv_group_title.setText(tasklist.getTitle());
-
+		TextView tvGroupTitle = (TextView) view.findViewById(R.id.grp_name);
+		tvGroupTitle.setText(tasklist.getTitle());
 		return view;
 	}
 
 	public boolean hasStableIds() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	public boolean isChildSelectable(int groupPosition, int childPosition) {
-		// TODO Auto-generated method stub
 		return true;
 	}
 

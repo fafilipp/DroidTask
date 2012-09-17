@@ -7,7 +7,7 @@ import android.os.Bundle;
 public class GoogleTaskAccountManagerCallback implements AccountManagerCallback<Bundle> {
 
 	public void run(AccountManagerFuture<Bundle> future) {
-
+		// nothing here necessary...
 	}
 
 }

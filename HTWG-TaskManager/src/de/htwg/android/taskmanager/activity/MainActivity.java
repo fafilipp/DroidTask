@@ -51,10 +51,10 @@ public class MainActivity extends ExpandableListActivity {
 		AlertDialog.Builder addDialog = new AlertDialog.Builder(this);
 		LayoutInflater layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View view = layoutInflater.inflate(R.layout.add_dialog, null);
-		final RadioGroup rg_type = (RadioGroup) view.findViewById(R.id.rg_new_type);
-		final EditText et_title = (EditText) view.findViewById(R.id.et_title);
+		final RadioGroup rgType = (RadioGroup) view.findViewById(R.id.rg_new_type);
+		final EditText etTitle = (EditText) view.findViewById(R.id.et_title);
 
-		rg_type.check(R.id.rb_task);
+		rgType.check(R.id.rb_task);
 		addDialog.setCancelable(true);
 
 		addDialog.setNegativeButton(ACTIVITY_DIALOG_CANCEL, new DialogInterface.OnClickListener() {
@@ -65,13 +65,13 @@ public class MainActivity extends ExpandableListActivity {
 
 		addDialog.setPositiveButton(ACTIVITY_DIALOG_ADD, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
-				if (rg_type.getCheckedRadioButtonId() == R.id.rb_task) {
-					Intent editTask_Intent = new Intent(MainActivity.this, NewAndEditTaskActivity.class);
-					editTask_Intent.putExtra(ACTIVITY_KEY_EDIT, false);
-					editTask_Intent.putExtra(ACTIVITY_KEY_TASK_TITLE, et_title.getText().toString());
-					startActivityForResult(editTask_Intent, REQUEST_CODE_NEW_ACTIVITY);
-				} else if (rg_type.getCheckedRadioButtonId() == R.id.rb_tasklist) {
-					addNewTaskList(et_title.getText().toString());
+				if (rgType.getCheckedRadioButtonId() == R.id.rb_task) {
+					Intent editTaskIntent = new Intent(MainActivity.this, NewAndEditTaskActivity.class);
+					editTaskIntent.putExtra(ACTIVITY_KEY_EDIT, false);
+					editTaskIntent.putExtra(ACTIVITY_KEY_TASK_TITLE, etTitle.getText().toString());
+					startActivityForResult(editTaskIntent, REQUEST_CODE_NEW_ACTIVITY);
+				} else if (rgType.getCheckedRadioButtonId() == R.id.rb_tasklist) {
+					addNewTaskList(etTitle.getText().toString());
 					reloadTaskList();
 				}
 			}
@@ -94,10 +94,10 @@ public class MainActivity extends ExpandableListActivity {
 
 	@Override
 	public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-		Intent taskView_Intent = new Intent(this, TaskActivity.class);
+		Intent taskViewIntent = new Intent(this, TaskActivity.class);
 		LocalTask task = (LocalTask) listAdapter.getChild(groupPosition, childPosition);
-		taskView_Intent.putExtra(ACTIVITY_KEY_TASK_ID, task.getInternalId());
-		this.startActivityForResult(taskView_Intent, REQUEST_CODE_SHOW_ACTIVITY);
+		taskViewIntent.putExtra(ACTIVITY_KEY_TASK_ID, task.getInternalId());
+		this.startActivityForResult(taskViewIntent, REQUEST_CODE_SHOW_ACTIVITY);
 		return true;
 	}
 

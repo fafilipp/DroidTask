@@ -28,32 +28,32 @@ import de.htwg.android.taskmanager.backend.util.EStatus;
 
 public class NewAndEditTaskActivity extends Activity {
 
-	private String task_id;
-	private EditText et_title;
-	private EditText et_note;
-	private DatePicker dp_due;
-	private TimePicker tp_due;
+	private String taskInternalId;
+	private EditText etTitle;
+	private EditText etNote;
+	private DatePicker datePickerDue;
+	private TimePicker timePickerDue;
 	private Calendar calendar;
-	private CheckBox cb_completed;
-	private Spinner sp_tasklist;
+	private CheckBox checkBoxCompleted;
+	private Spinner spinnerTasklist;
 	private LocalTask task;
 	private boolean edit;
 	private DatabaseHandler dbHandler;
 	private List<LocalTaskList> listTaskList;
 
 	public void addOrUpdateTask() {
-		String title = et_title.getText().toString();
+		String title = etTitle.getText().toString();
 		if (title.equals("")) {
 			Toast.makeText(this, "Title is empty! Add or Update not possible.", Toast.LENGTH_LONG).show();
 			return;
 		}
-		String note = et_note.getText().toString();
-		boolean completed = cb_completed.isChecked();
-		int day = dp_due.getDayOfMonth();
-		int year = dp_due.getYear();
-		int month = dp_due.getMonth();
-		int hour = tp_due.getCurrentHour();
-		int minute = tp_due.getCurrentMinute();
+		String note = etNote.getText().toString();
+		boolean completed = checkBoxCompleted.isChecked();
+		int day = datePickerDue.getDayOfMonth();
+		int year = datePickerDue.getYear();
+		int month = datePickerDue.getMonth();
+		int hour = timePickerDue.getCurrentHour();
+		int minute = timePickerDue.getCurrentMinute();
 
 		task.modifyTitle(title);
 		task.modifyNotes(note);
@@ -70,7 +70,7 @@ public class NewAndEditTaskActivity extends Activity {
 		if (edit) {
 			dbHandler.updateTask(task);
 		} else {
-			LocalTaskList localTaskList = listTaskList.get(sp_tasklist.getSelectedItemPosition());
+			LocalTaskList localTaskList = listTaskList.get(spinnerTasklist.getSelectedItemPosition());
 			dbHandler.addTask(localTaskList, task);
 		}
 		
@@ -80,19 +80,19 @@ public class NewAndEditTaskActivity extends Activity {
 
 	public void loadTaskData() {
 		calendar.setTimeInMillis(task.getDue());
-		et_title.setText(task.getTitle());
-		et_note.setText(task.getNotes());
+		etTitle.setText(task.getTitle());
+		etNote.setText(task.getNotes());
 		switch (task.getStatus()) {
 		case NEEDS_ACTION:
-			cb_completed.setChecked(false);
+			checkBoxCompleted.setChecked(false);
 			break;
 		case COMPLETED:
-			cb_completed.setChecked(true);
+			checkBoxCompleted.setChecked(true);
 			break;
 		}
-		dp_due.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
-		tp_due.setCurrentHour(calendar.get(Calendar.HOUR));
-		tp_due.setCurrentMinute(calendar.get(Calendar.MINUTE));
+		datePickerDue.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+		timePickerDue.setCurrentHour(calendar.get(Calendar.HOUR));
+		timePickerDue.setCurrentMinute(calendar.get(Calendar.MINUTE));
 	}
 
 	@Override
@@ -106,26 +106,26 @@ public class NewAndEditTaskActivity extends Activity {
 		dbHandler = new DatabaseHandler(this);
 		calendar = Calendar.getInstance();
 
-		et_title = (EditText) findViewById(R.id.title);
-		et_note = (EditText) findViewById(R.id.notes);
-		dp_due = (DatePicker) findViewById(R.id.date);
-		tp_due = (TimePicker) findViewById(R.id.time);
-		cb_completed = (CheckBox) findViewById(R.id.completed);
-		sp_tasklist = (Spinner) findViewById(R.id.tasklist);
+		etTitle = (EditText) findViewById(R.id.title);
+		etNote = (EditText) findViewById(R.id.notes);
+		datePickerDue = (DatePicker) findViewById(R.id.date);
+		timePickerDue = (TimePicker) findViewById(R.id.time);
+		checkBoxCompleted = (CheckBox) findViewById(R.id.completed);
+		spinnerTasklist = (Spinner) findViewById(R.id.tasklist);
 
 		if (edit) {
-			task_id = getIntent().getExtras().getString(ACTIVITY_KEY_TASK_ID);
-			task = dbHandler.getTaskByInternalId(task_id);
+			taskInternalId = getIntent().getExtras().getString(ACTIVITY_KEY_TASK_ID);
+			task = dbHandler.getTaskByInternalId(taskInternalId);
 			loadTaskData();
 		} else {
 			task = new LocalTask();
 			String title = getIntent().getExtras().getString(ACTIVITY_KEY_TASK_TITLE);
 			task.setTitle(title);
-			et_title.setText(title);
+			etTitle.setText(title);
 
-			TextView lb_taskList = (TextView) findViewById(R.id.lb_tasklist);
-			lb_taskList.setVisibility(View.VISIBLE);
-			sp_tasklist.setVisibility(View.VISIBLE);
+			TextView tvTaskList = (TextView) findViewById(R.id.lb_tasklist);
+			tvTaskList.setVisibility(View.VISIBLE);
+			spinnerTasklist.setVisibility(View.VISIBLE);
 
 			listTaskList = dbHandler.getTaskLists();
 			List<String> list = new ArrayList<String>();
@@ -134,7 +134,7 @@ public class NewAndEditTaskActivity extends Activity {
 			}
 			ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, list);
 			dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-			sp_tasklist.setAdapter(dataAdapter);
+			spinnerTasklist.setAdapter(dataAdapter);
 		}
 	}
 
