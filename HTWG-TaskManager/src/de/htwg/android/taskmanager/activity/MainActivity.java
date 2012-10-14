@@ -23,12 +23,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.widget.RadioGroup;
 import de.htwg.android.taskmanager.adapter.TaskListAdapter;
 import de.htwg.android.taskmanager.backend.database.DatabaseHandler;
@@ -49,33 +52,41 @@ public class MainActivity extends ExpandableListActivity {
 
 	private void createAddDialog() {
 		AlertDialog.Builder addDialog = new AlertDialog.Builder(this);
-		LayoutInflater layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		LayoutInflater layoutInflater = (LayoutInflater) this
+				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View view = layoutInflater.inflate(R.layout.add_dialog, null);
-		final RadioGroup rgType = (RadioGroup) view.findViewById(R.id.rg_new_type);
+		final RadioGroup rgType = (RadioGroup) view
+				.findViewById(R.id.rg_new_type);
 		final EditText etTitle = (EditText) view.findViewById(R.id.et_title);
 
 		rgType.check(R.id.rb_task);
 		addDialog.setCancelable(true);
 
-		addDialog.setNegativeButton(ACTIVITY_DIALOG_CANCEL, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int which) {
-				dialog.dismiss();
-			}
-		});
+		addDialog.setNegativeButton(ACTIVITY_DIALOG_CANCEL,
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+					}
+				});
 
-		addDialog.setPositiveButton(ACTIVITY_DIALOG_ADD, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int which) {
-				if (rgType.getCheckedRadioButtonId() == R.id.rb_task) {
-					Intent editTaskIntent = new Intent(MainActivity.this, NewAndEditTaskActivity.class);
-					editTaskIntent.putExtra(ACTIVITY_KEY_EDIT, false);
-					editTaskIntent.putExtra(ACTIVITY_KEY_TASK_TITLE, etTitle.getText().toString());
-					startActivityForResult(editTaskIntent, REQUEST_CODE_NEW_ACTIVITY);
-				} else if (rgType.getCheckedRadioButtonId() == R.id.rb_tasklist) {
-					addNewTaskList(etTitle.getText().toString());
-					reloadTaskList();
-				}
-			}
-		});
+		addDialog.setPositiveButton(ACTIVITY_DIALOG_ADD,
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						if (rgType.getCheckedRadioButtonId() == R.id.rb_task) {
+							Intent editTaskIntent = new Intent(
+									MainActivity.this,
+									NewAndEditTaskActivity.class);
+							editTaskIntent.putExtra(ACTIVITY_KEY_EDIT, false);
+							editTaskIntent.putExtra(ACTIVITY_KEY_TASK_TITLE,
+									etTitle.getText().toString());
+							startActivityForResult(editTaskIntent,
+									REQUEST_CODE_NEW_ACTIVITY);
+						} else if (rgType.getCheckedRadioButtonId() == R.id.rb_tasklist) {
+							addNewTaskList(etTitle.getText().toString());
+							reloadTaskList();
+						}
+					}
+				});
 		addDialog.create();
 		addDialog.setView(view);
 		addDialog.show();
@@ -93,9 +104,11 @@ public class MainActivity extends ExpandableListActivity {
 	}
 
 	@Override
-	public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+	public boolean onChildClick(ExpandableListView parent, View v,
+			int groupPosition, int childPosition, long id) {
 		Intent taskViewIntent = new Intent(this, TaskActivity.class);
-		LocalTask task = (LocalTask) listAdapter.getChild(groupPosition, childPosition);
+		LocalTask task = (LocalTask) listAdapter.getChild(groupPosition,
+				childPosition);
 		taskViewIntent.putExtra(ACTIVITY_KEY_TASK_ID, task.getInternalId());
 		this.startActivityForResult(taskViewIntent, REQUEST_CODE_SHOW_ACTIVITY);
 		return true;
@@ -110,6 +123,8 @@ public class MainActivity extends ExpandableListActivity {
 
 		listAdapter = new TaskListAdapter(this, dbHandler.getTaskLists());
 		setListAdapter(listAdapter);
+		ExpandableListView list = (ExpandableListView) findViewById(android.R.id.list);
+		registerForContextMenu(list);
 	}
 
 	@Override
@@ -121,9 +136,6 @@ public class MainActivity extends ExpandableListActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.preferences:
-			// TODO: Add preferences activity
-			break;
 		case R.id.add:
 			createAddDialog();
 			return true;
@@ -142,24 +154,79 @@ public class MainActivity extends ExpandableListActivity {
 
 	private void startSync() {
 		AccountManager accountManager = AccountManager.get(this);
-		Account[] accounts = accountManager.getAccountsByType(GOOGLE_ACCOUNT_TYPE);
-		Log.d(LOG_TAG, "Amount of Google accounts on device = " + accounts.length);
+		Account[] accounts = accountManager
+				.getAccountsByType(GOOGLE_ACCOUNT_TYPE);
+		Log.d(LOG_TAG, "Amount of Google accounts on device = "
+				+ accounts.length);
 		if (accounts.length < 1) {
 			Log.i(LOG_TAG, "No Google accounts found, no sync possible.");
 		} else {
 			Log.d(LOG_TAG, "Selected Google account = " + accounts[0].name);
-			GoogleSyncManager googleSyncManager = new GoogleSyncManager(this, accounts[0]);
+			GoogleSyncManager googleSyncManager = new GoogleSyncManager(this,
+					accounts[0]);
 			googleSyncManager.execute();
 			try {
 				googleSyncManager.get(60, TimeUnit.SECONDS);
 			} catch (InterruptedException e) {
-				Log.d(LOG_TAG, "InterruptedException catched while waiting for Sync response.");
+				Log.d(LOG_TAG,
+						"InterruptedException catched while waiting for Sync response.");
 			} catch (ExecutionException e) {
-				Log.d(LOG_TAG, "ExecutionException catched while waiting for Sync response.");
+				Log.d(LOG_TAG,
+						"ExecutionException catched while waiting for Sync response.");
 			} catch (TimeoutException e) {
-				Log.d(LOG_TAG, "TimeoutException catched while waiting for Sync response.");
+				Log.d(LOG_TAG,
+						"TimeoutException catched while waiting for Sync response.");
 			}
 		}
+	}
+
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		// TODO Auto-generated method stub
+
+		ExpandableListView.ExpandableListContextMenuInfo info = (ExpandableListView.ExpandableListContextMenuInfo) menuInfo;
+		int type = ExpandableListView
+				.getPackedPositionType(info.packedPosition);
+		int groupPos = ExpandableListView
+				.getPackedPositionGroup(info.packedPosition);
+		
+
+		if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+			int childPos = ExpandableListView
+					.getPackedPositionChild(info.packedPosition);
+			menu.setHeaderTitle(dbHandler.getTaskLists().get(groupPos)
+					.getTaskList().get(childPos).getTitle());
+			menu.add(0, 0, 0, "delete");
+		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
+			menu.setHeaderTitle(dbHandler.getTaskLists().get(groupPos).getTitle());
+					
+			menu.add(0, 0, 0, "delete");
+		}
+
+	}
+
+	public boolean onContextItemSelected(MenuItem menuItem) {
+		ExpandableListContextMenuInfo info = (ExpandableListContextMenuInfo) menuItem
+				.getMenuInfo();
+		int type = ExpandableListView
+				.getPackedPositionType(info.packedPosition);
+		int groupPos = ExpandableListView
+				.getPackedPositionGroup(info.packedPosition);
+		if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+			int childPos = ExpandableListView
+					.getPackedPositionChild(info.packedPosition);
+			String id = dbHandler.getTaskLists().get(groupPos).getTaskList()
+					.get(childPos).getInternalId();
+
+			dbHandler.deleteTaskFinal(id);
+
+		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
+			String id = dbHandler.getTaskLists().get(groupPos).getTitle();
+			dbHandler.deleteTaskListFinal(id);
+		}
+		reloadTaskList();
+		return true;
 	}
 
 }

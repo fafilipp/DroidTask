@@ -1,11 +1,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <item
-        android:id="@+id/preferences"
-        android:icon="@android:drawable/ic_menu_preferences"
-        android:showAsAction="always"
-        android:title="@string/preferences"/>
-    
+       
     <item
         android:id="@+id/sync"
         android:icon="@android:drawable/ic_menu_upload"
