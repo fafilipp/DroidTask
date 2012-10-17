@@ -4,9 +4,6 @@ import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACT
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_DIALOG_CANCEL;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_DIALOG_TASK_DELETE;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_DIALOG_TASK_EDIT;
-import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_DIALOG_TASK_SHOW;
-import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_DIALOG_TL_DELETE;
-import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_DIALOG_TL_EDIT;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_KEY_EDIT;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_KEY_TASK_ID;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_KEY_TASK_TITLE;
@@ -15,6 +12,8 @@ import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.LOG
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQUEST_CODE_NEW_ACTIVITY;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQUEST_CODE_SHOW_ACTIVITY;
 
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -48,6 +47,7 @@ public class MainActivity extends ExpandableListActivity {
 
 	private DatabaseHandler dbHandler;
 	private TaskListAdapter listAdapter;
+	private Set<Integer> openedGroups = new TreeSet<Integer>();
 
 	/**
 	 * A new task list will be created and added to the database, using the
@@ -86,13 +86,52 @@ public class MainActivity extends ExpandableListActivity {
 				dialog.dismiss();
 			}
 		});
+		
+		addDialog.setPositiveButton(ACTIVITY_DIALOG_ADD, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				String newTitle = etTitle.getText().toString();
+				if (rgType.getCheckedRadioButtonId() == R.id.rb_task) {
+					if(newTitle != null && newTitle.trim().equals("")) {
+						startNewAndEditActivity(newTitle, false);
+					}
+				} else if (rgType.getCheckedRadioButtonId() == R.id.rb_tasklist) {
+					if(newTitle != null && !newTitle.trim().equals("")) {
+						addNewTaskList(newTitle);
+						reloadTaskList();
+					}
+				}
+			}
+		});
+		addDialog.create();
+		addDialog.setView(view);
+		addDialog.show();
+	}
+
+	/**
+	 * TO
+	 * @param taskList
+	 */
+	private void createEditTaskListDialog(final LocalTaskList taskList) {
+		AlertDialog.Builder addDialog = new AlertDialog.Builder(this);
+		LayoutInflater layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		View view = layoutInflater.inflate(R.layout.edit_dialog, null);
+
+		final EditText etTitle = (EditText) view.findViewById(R.id.et_title);
+		etTitle.setText(taskList.getTitle());
+
+		addDialog.setCancelable(true);
+		addDialog.setNegativeButton(ACTIVITY_DIALOG_CANCEL, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+			}
+		});
 
 		addDialog.setPositiveButton(ACTIVITY_DIALOG_ADD, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
-				if (rgType.getCheckedRadioButtonId() == R.id.rb_task) {
-					startNewAndEditActivity(etTitle.getText().toString(), false);
-				} else if (rgType.getCheckedRadioButtonId() == R.id.rb_tasklist) {
-					addNewTaskList(etTitle.getText().toString());
+				String newTitle = etTitle.getText().toString();
+				if(newTitle != null && !newTitle.trim().equals("")) {
+					taskList.modifyTitle(newTitle);
+					dbHandler.updateTaskList(taskList);
 					reloadTaskList();
 				}
 			}
@@ -100,6 +139,186 @@ public class MainActivity extends ExpandableListActivity {
 		addDialog.create();
 		addDialog.setView(view);
 		addDialog.show();
+	}
+
+	/**
+	 * Deletes a task from the database and reloads the task list.
+	 * 
+	 * @param taskId
+	 *            the id of this task.
+	 */
+	private void deleteTask(String taskId) {
+		dbHandler.deleteTask(taskId);
+		reloadTaskList();
+	}
+
+	/**
+	 * Deletes a task list from the database and reloads the task list.
+	 * 
+	 * @param taskListId
+	 *            the id of this task list.
+	 */
+	private void deleteTaskList(String taskListId) {
+		dbHandler.deleteTaskList(taskListId);
+		reloadTaskList();
+	}
+	
+	/**
+	 * On the result of an called activity this method will be called.
+	 * Afterwards the tasklist will be reloaded into the list adapter.
+	 */
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == REQUEST_CODE_NEW_ACTIVITY) {
+			reloadTaskList();
+		}
+		if (requestCode == REQUEST_CODE_SHOW_ACTIVITY) {
+			reloadTaskList();
+		}
+		super.onActivityResult(requestCode, resultCode, data);
+	}
+	
+	/**
+	 * While clicking on a child in the list adapter the activity TaskActivity
+	 * will be started, which shows up some information for this tasks.
+	 */
+	@Override
+	public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+		LocalTask task = (LocalTask) listAdapter.getChild(groupPosition, childPosition);
+		startShowTaskActivity(task.getInternalId());
+		return true;
+	}
+	
+	/**
+	 * Default onContextItemSelected of this activity. It reacts to the clicked
+	 * event.
+	 */
+	public boolean onContextItemSelected(MenuItem menuItem) {
+		String clicked = menuItem.getTitle().toString();
+		ExpandableListContextMenuInfo info = (ExpandableListContextMenuInfo) menuItem.getMenuInfo();
+		int type = ExpandableListView.getPackedPositionType(info.packedPosition);
+		int groupPos = ExpandableListView.getPackedPositionGroup(info.packedPosition);
+		if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+			int childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
+			String taskId = ((LocalTask) listAdapter.getChild(groupPos, childPos)).getInternalId();
+			if (clicked.equals(ACTIVITY_DIALOG_TASK_EDIT)) {
+				startNewAndEditActivity(taskId, true);
+			} else if (clicked.equals(ACTIVITY_DIALOG_TASK_DELETE)) {
+				deleteTask(taskId);
+			}
+			reloadTaskList();
+		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
+			String taskListId = ((LocalTaskList) listAdapter.getGroup(groupPos)).getInternalId();
+			if (clicked.equals(ACTIVITY_DIALOG_TASK_EDIT)) {
+				createEditTaskListDialog((LocalTaskList) listAdapter.getGroup(groupPos));
+			} else if (clicked.equals(ACTIVITY_DIALOG_TASK_DELETE)) {
+				deleteTaskList(taskListId);
+			}
+		}
+		reloadTaskList();
+		return true;
+	}
+
+	/**
+	 * Default onCreate Method for this Activity.
+	 */
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		dbHandler = new DatabaseHandler(this);
+		listAdapter = new TaskListAdapter(this, dbHandler.getTaskLists());
+		setListAdapter(listAdapter);
+		ExpandableListView list = (ExpandableListView) findViewById(android.R.id.list);
+		registerForContextMenu(list);
+	}
+
+	/**
+	 * Default onCreateContextMenu Method for the on long click listener. If
+	 * clicking on task lists then the user is able to edit and delete the task
+	 * list. Otherwise while clicking on task the user is able to show, edit and
+	 * delete this task.
+	 */
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+		ExpandableListContextMenuInfo info = (ExpandableListContextMenuInfo) menuInfo;
+		int type = ExpandableListView.getPackedPositionType(info.packedPosition);
+		int groupPos = ExpandableListView.getPackedPositionGroup(info.packedPosition);
+		if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+			int childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
+			LocalTask localTask = (LocalTask) listAdapter.getChild(groupPos, childPos);
+			menu.setHeaderTitle(localTask.getTitle());
+			menu.add(ACTIVITY_DIALOG_TASK_EDIT);
+			menu.add(ACTIVITY_DIALOG_TASK_DELETE);
+			menu.add(ACTIVITY_DIALOG_CANCEL);
+		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
+			LocalTaskList localTaskList = (LocalTaskList) listAdapter.getGroup(groupPos);
+			menu.setHeaderTitle(localTaskList.getTitle());
+			menu.add(ACTIVITY_DIALOG_TASK_EDIT);
+			menu.add(ACTIVITY_DIALOG_TASK_DELETE);
+			menu.add(ACTIVITY_DIALOG_CANCEL);
+		}
+
+	}
+
+	/**
+	 * Default onCreateOptionsMenu Method for this Activity.
+	 */
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.activity_main, menu);
+		return true;
+	}
+
+	/**
+	 * Removes collapsed group positions from the set.
+	 * This method is necessary to save the expanded list state.
+	 */
+	@Override
+	public void onGroupCollapse(int groupPosition) {
+		super.onGroupCollapse(groupPosition);
+		openedGroups.remove(groupPosition);
+	}
+
+	/**
+	 * Saves all expanded group positions in the set.
+	 * This method is necessary to save the expanded list state.
+	 */
+	@Override
+	public void onGroupExpand(int groupPosition) {
+		super.onGroupExpand(groupPosition);
+		openedGroups.add(groupPosition);
+	}
+
+	/**
+	 * Default onOptionsItemSelected Method for this Activity. Calls
+	 * createAddDialog method if clicking on the add button. The sync button
+	 * starts the sync with the Google Api using an AsyncTask.
+	 */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.add:
+			createAddDialog();
+			return true;
+		case R.id.sync:
+			startSync();
+			reloadTaskList();
+			break;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+	/**
+	 * Reloads the task list in the list adapter. Creates a new TaskListAdapter
+	 * and resets it. Afterwards it expands all expanded groups again.
+	 */
+	private void reloadTaskList() {
+		listAdapter = new TaskListAdapter(this, dbHandler.getTaskLists());
+		setListAdapter(listAdapter);
+		for(Integer openedGroup: openedGroups) {
+			getExpandableListView().expandGroup(openedGroup);
+		}
 	}
 
 	/**
@@ -124,32 +343,6 @@ public class MainActivity extends ExpandableListActivity {
 	}
 
 	/**
-	 * On the result of an called activity this method will be called.
-	 * Afterwards the tasklist will be reloaded into the list adapter.
-	 */
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == REQUEST_CODE_NEW_ACTIVITY) {
-			reloadTaskList();
-		}
-		if (requestCode == REQUEST_CODE_SHOW_ACTIVITY) {
-			reloadTaskList();
-		}
-		super.onActivityResult(requestCode, resultCode, data);
-	}
-
-	/**
-	 * While clicking on a child in the list adapter the activity TaskActivity
-	 * will be started, which shows up some information for this tasks.
-	 */
-	@Override
-	public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-		LocalTask task = (LocalTask) listAdapter.getChild(groupPosition, childPosition);
-		startShowTaskActivity(task.getInternalId());
-		return true;
-	}
-
-	/**
 	 * Starts the TaskActivity activity.
 	 * 
 	 * @param taskId
@@ -159,57 +352,6 @@ public class MainActivity extends ExpandableListActivity {
 		Intent taskViewIntent = new Intent(this, TaskActivity.class);
 		taskViewIntent.putExtra(ACTIVITY_KEY_TASK_ID, taskId);
 		this.startActivityForResult(taskViewIntent, REQUEST_CODE_SHOW_ACTIVITY);
-	}
-
-	/**
-	 * Default onCreate Method for this Activity.
-	 */
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		dbHandler = new DatabaseHandler(this);
-		listAdapter = new TaskListAdapter(this, dbHandler.getTaskLists());
-		setListAdapter(listAdapter);
-		ExpandableListView list = (ExpandableListView) findViewById(android.R.id.list);
-		registerForContextMenu(list);
-	}
-
-	/**
-	 * Default onCreateOptionsMenu Method for this Activity.
-	 */
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.activity_main, menu);
-		return true;
-	}
-
-	/**
-	 * Default onOptionsItemSelected Method for this Activity. Calls
-	 * createAddDialog method if clicking on the add button. The sync button
-	 * starts the sync with the Google Api using an AsyncTask.
-	 */
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.add:
-			createAddDialog();
-			return true;
-		case R.id.sync:
-			startSync();
-			reloadTaskList();
-			break;
-		}
-		return super.onOptionsItemSelected(item);
-	}
-
-	/**
-	 * Reloads the task list in the list adapter. Creates a new TaskListAdapter
-	 * and resets it.
-	 */
-	private void reloadTaskList() {
-		listAdapter = new TaskListAdapter(this, dbHandler.getTaskLists());
-		setListAdapter(listAdapter);
 	}
 
 	/**
@@ -236,89 +378,6 @@ public class MainActivity extends ExpandableListActivity {
 				Log.d(LOG_TAG, "TimeoutException catched while waiting for Sync response.");
 			}
 		}
-	}
-
-	/**
-	 * Default onCreateContextMenu Method for the on long click listener. If
-	 * clicking on task lists then the user is able to edit and delete the task
-	 * list. Otherwise while clicking on task the user is able to show, edit and
-	 * delete this task.
-	 */
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-		ExpandableListContextMenuInfo info = (ExpandableListContextMenuInfo) menuInfo;
-		int type = ExpandableListView.getPackedPositionType(info.packedPosition);
-		int groupPos = ExpandableListView.getPackedPositionGroup(info.packedPosition);
-		if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
-			int childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
-			LocalTask localTask = (LocalTask) listAdapter.getChild(groupPos, childPos);
-			menu.setHeaderTitle(localTask.getTitle());
-			menu.add(ACTIVITY_DIALOG_TASK_SHOW);
-			menu.add(ACTIVITY_DIALOG_TASK_EDIT);
-			menu.add(ACTIVITY_DIALOG_TASK_DELETE);
-			menu.add(ACTIVITY_DIALOG_CANCEL);
-		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
-			LocalTaskList localTaskList = (LocalTaskList) listAdapter.getGroup(groupPos);
-			menu.setHeaderTitle(localTaskList.getTitle());
-			menu.add(ACTIVITY_DIALOG_TL_EDIT);
-			menu.add(ACTIVITY_DIALOG_TL_DELETE);
-			menu.add(ACTIVITY_DIALOG_CANCEL);
-		}
-
-	}
-
-	/**
-	 * Default onContextItemSelected of this activity. It reacts to the clicked
-	 * event.
-	 */
-	public boolean onContextItemSelected(MenuItem menuItem) {
-		String clicked = menuItem.getTitle().toString();
-		ExpandableListContextMenuInfo info = (ExpandableListContextMenuInfo) menuItem.getMenuInfo();
-		int type = ExpandableListView.getPackedPositionType(info.packedPosition);
-		int groupPos = ExpandableListView.getPackedPositionGroup(info.packedPosition);
-		if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
-			int childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
-			String taskId = ((LocalTask) listAdapter.getChild(groupPos, childPos)).getInternalId();
-			if (clicked.equals(ACTIVITY_DIALOG_TASK_SHOW)) {
-				startShowTaskActivity(taskId);
-			} else if (clicked.equals(ACTIVITY_DIALOG_TASK_EDIT)) {
-				startNewAndEditActivity(taskId, true);
-			} else if (clicked.equals(ACTIVITY_DIALOG_TASK_DELETE)) {
-				deleteTask(taskId);
-			}
-			reloadTaskList();
-		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
-			String taskListId = ((LocalTaskList) listAdapter.getGroup(groupPos)).getInternalId();
-			if (clicked.equals(ACTIVITY_DIALOG_TL_EDIT)) {
-				// TODO
-			} else if (clicked.equals(ACTIVITY_DIALOG_TL_DELETE)) {
-				deleteTaskList(taskListId);
-			}
-		}
-		reloadTaskList();
-		return true;
-	}
-
-	/**
-	 * Deletes a task list from the database and reloads the task list.
-	 * 
-	 * @param taskListId
-	 *            the id of this task list.
-	 */
-	private void deleteTaskList(String taskListId) {
-		dbHandler.deleteTaskList(taskListId);
-		reloadTaskList();
-	}
-
-	/**
-	 * Deletes a task from the database and reloads the task list.
-	 * 
-	 * @param taskId
-	 *            the id of this task.
-	 */
-	private void deleteTask(String taskId) {
-		dbHandler.deleteTask(taskId);
-		reloadTaskList();
 	}
 
 }

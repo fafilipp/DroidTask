@@ -18,9 +18,6 @@ public interface GoogleTaskConstants {
 	String ACTIVITY_LAYOUT_DUE = "Due date:";
 	String ACTIVITY_LAYOUT_COMPLETION = "Completion date:";
 	
-	String ACTIVITY_DIALOG_TL_EDIT = "Edit Title";
-	String ACTIVITY_DIALOG_TL_DELETE = "Delete Tasklist and Tasks";
-	String ACTIVITY_DIALOG_TASK_SHOW = "Show";
 	String ACTIVITY_DIALOG_TASK_EDIT = "Edit";
 	String ACTIVITY_DIALOG_TASK_DELETE = "Delete";
 	
