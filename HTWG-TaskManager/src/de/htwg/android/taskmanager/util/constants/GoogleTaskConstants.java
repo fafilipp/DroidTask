@@ -2,7 +2,7 @@ package de.htwg.android.taskmanager.util.constants;
 
 
 public interface GoogleTaskConstants {
-
+	
 	String AUTH_TOKEN_TYPE = "Manage your tasks";
 	String GOOGLE_ACCOUNT_TYPE = "com.google";
 	String SERVER_API_KEY = "AIzaSyALNwJA_3Pm3KfsCjZhgzsJXx85GlKYmAI";
@@ -17,6 +17,12 @@ public interface GoogleTaskConstants {
 	String ACTIVITY_DIALOG_ADD = "Add";
 	String ACTIVITY_LAYOUT_DUE = "Due date:";
 	String ACTIVITY_LAYOUT_COMPLETION = "Completion date:";
+	
+	String ACTIVITY_DIALOG_TL_EDIT = "Edit Title";
+	String ACTIVITY_DIALOG_TL_DELETE = "Delete Tasklist and Tasks";
+	String ACTIVITY_DIALOG_TASK_SHOW = "Show";
+	String ACTIVITY_DIALOG_TASK_EDIT = "Edit";
+	String ACTIVITY_DIALOG_TASK_DELETE = "Delete";
 	
 	int REQUEST_CODE_NEW_ACTIVITY = 100;
 	int REQUEST_CODE_EDIT_ACTIVITY = 101;
