@@ -6,6 +6,7 @@ import java.util.List;
 
 import android.accounts.Account;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -23,12 +24,25 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 
 	private Activity activity;
 	private Account account;
-
+	private ProgressDialog loadingDialog;
+	
 	public GoogleSyncManager(Activity activity, Account account) {
 		this.activity = activity;
 		this.account = account;
 	}
 
+	@Override
+	protected void onPreExecute() {
+		super.onPreExecute();
+		// TODO --> geht noch nicht, er ruft die Methoden aber auf.
+		Log.d(LOG_TAG, "onPreExecute -> opening loading dialog");
+		loadingDialog = new ProgressDialog(activity);
+		loadingDialog.setMessage("Please wait...");
+        loadingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        loadingDialog.setCancelable(false);
+        loadingDialog.show();
+	}
+	
 	@Override
 	protected Void doInBackground(Void... params) {
 		try {
@@ -44,6 +58,15 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 		return null;
 	}
 
+	@Override
+	protected void onPostExecute(Void result) {
+		super.onPostExecute(result);
+		// TODO --> geht noch nicht, er ruft die Methoden aber auf.		Log.d(LOG_TAG, "onPostExecute -> closing loading dialog");
+		if(loadingDialog != null) {
+			loadingDialog.hide();
+		}
+	}
+	
 	private Task searchRemoteTaskForLocalTask(List<Task> remoteTasks, LocalTask localTask) {
 		for (Task remoteTask : remoteTasks) {
 			if (remoteTask.getId().equals(localTask.getGoogleId())) {

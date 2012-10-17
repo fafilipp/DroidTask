@@ -47,7 +47,7 @@ public class MainActivity extends ExpandableListActivity {
 
 	private DatabaseHandler dbHandler;
 	private TaskListAdapter listAdapter;
-	private Set<Integer> openedGroups = new TreeSet<Integer>();
+	private Set<String> expandedTaskLists = new TreeSet<String>();
 
 	/**
 	 * A new task list will be created and added to the database, using the
@@ -86,16 +86,16 @@ public class MainActivity extends ExpandableListActivity {
 				dialog.dismiss();
 			}
 		});
-		
+
 		addDialog.setPositiveButton(ACTIVITY_DIALOG_ADD, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
 				String newTitle = etTitle.getText().toString();
 				if (rgType.getCheckedRadioButtonId() == R.id.rb_task) {
-					if(newTitle != null && newTitle.trim().equals("")) {
+					if (newTitle != null && newTitle.trim().equals("")) {
 						startNewAndEditActivity(newTitle, false);
 					}
 				} else if (rgType.getCheckedRadioButtonId() == R.id.rb_tasklist) {
-					if(newTitle != null && !newTitle.trim().equals("")) {
+					if (newTitle != null && !newTitle.trim().equals("")) {
 						addNewTaskList(newTitle);
 						reloadTaskList();
 					}
@@ -109,6 +109,7 @@ public class MainActivity extends ExpandableListActivity {
 
 	/**
 	 * TO
+	 * 
 	 * @param taskList
 	 */
 	private void createEditTaskListDialog(final LocalTaskList taskList) {
@@ -129,7 +130,7 @@ public class MainActivity extends ExpandableListActivity {
 		addDialog.setPositiveButton(ACTIVITY_DIALOG_ADD, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
 				String newTitle = etTitle.getText().toString();
-				if(newTitle != null && !newTitle.trim().equals("")) {
+				if (newTitle != null && !newTitle.trim().equals("")) {
 					taskList.modifyTitle(newTitle);
 					dbHandler.updateTaskList(taskList);
 					reloadTaskList();
@@ -162,7 +163,7 @@ public class MainActivity extends ExpandableListActivity {
 		dbHandler.deleteTaskList(taskListId);
 		reloadTaskList();
 	}
-	
+
 	/**
 	 * On the result of an called activity this method will be called.
 	 * Afterwards the tasklist will be reloaded into the list adapter.
@@ -177,7 +178,7 @@ public class MainActivity extends ExpandableListActivity {
 		}
 		super.onActivityResult(requestCode, resultCode, data);
 	}
-	
+
 	/**
 	 * While clicking on a child in the list adapter the activity TaskActivity
 	 * will be started, which shows up some information for this tasks.
@@ -188,7 +189,7 @@ public class MainActivity extends ExpandableListActivity {
 		startShowTaskActivity(task.getInternalId());
 		return true;
 	}
-	
+
 	/**
 	 * Default onContextItemSelected of this activity. It reacts to the clicked
 	 * event.
@@ -271,23 +272,25 @@ public class MainActivity extends ExpandableListActivity {
 	}
 
 	/**
-	 * Removes collapsed group positions from the set.
-	 * This method is necessary to save the expanded list state.
+	 * Removes collapsed group positions from the set. This method is necessary
+	 * to save the expanded list state.
 	 */
 	@Override
 	public void onGroupCollapse(int groupPosition) {
 		super.onGroupCollapse(groupPosition);
-		openedGroups.remove(groupPosition);
+		LocalTaskList localTaskList = (LocalTaskList) listAdapter.getGroup(groupPosition);
+		expandedTaskLists.remove(localTaskList.getInternalId());
 	}
 
 	/**
-	 * Saves all expanded group positions in the set.
-	 * This method is necessary to save the expanded list state.
+	 * Saves all expanded group positions in the set. This method is necessary
+	 * to save the expanded list state.
 	 */
 	@Override
 	public void onGroupExpand(int groupPosition) {
 		super.onGroupExpand(groupPosition);
-		openedGroups.add(groupPosition);
+		LocalTaskList localTaskList = (LocalTaskList) listAdapter.getGroup(groupPosition);
+		expandedTaskLists.add(localTaskList.getInternalId());
 	}
 
 	/**
@@ -316,9 +319,36 @@ public class MainActivity extends ExpandableListActivity {
 	private void reloadTaskList() {
 		listAdapter = new TaskListAdapter(this, dbHandler.getTaskLists());
 		setListAdapter(listAdapter);
-		for(Integer openedGroup: openedGroups) {
-			getExpandableListView().expandGroup(openedGroup);
+		for (String expandedTaskList : expandedTaskLists) {
+			int groupToExpand = searchGroupPosForTaskList(expandedTaskList);
+			if (groupToExpand != -1) {
+				// id found, expand this
+				getExpandableListView().expandGroup(groupToExpand);
+			} else {
+				// remove id from list, because it does't exists anymore.
+				expandedTaskLists.remove(expandedTaskList);
+			}
 		}
+	}
+
+	/**
+	 * Searchs the group position in the list adapter for an given task list id.
+	 * 
+	 * @param taskListId
+	 *            the internal id of the local task list
+	 * @return the group position if the task list is been found in the list
+	 *         adapter, -1 if not found.
+	 */
+	private int searchGroupPosForTaskList(String taskListId) {
+		for (int gp = 0; gp < listAdapter.getGroupCount(); gp++) {
+			LocalTaskList tmp = (LocalTaskList) listAdapter.getGroup(gp);
+			if (tmp.getInternalId().equals(taskListId)) {
+				// Group position for this task list found, returning position.
+				return gp;
+			}
+		}
+		// Group Position not found, returning -1
+		return -1;
 	}
 
 	/**
