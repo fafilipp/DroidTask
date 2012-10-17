@@ -15,6 +15,7 @@ public interface GoogleTaskConstants {
 	
 	String ACTIVITY_DIALOG_CANCEL = "Cancel";
 	String ACTIVITY_DIALOG_ADD = "Add";
+	String ACTIVITY_DIALOG_EDIT = "Edit";
 	String ACTIVITY_LAYOUT_DUE = "Due date:";
 	String ACTIVITY_LAYOUT_COMPLETION = "Completion date:";
 	

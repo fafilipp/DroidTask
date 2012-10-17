@@ -2,6 +2,7 @@ package de.htwg.android.taskmanager.activity;
 
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_DIALOG_ADD;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_DIALOG_CANCEL;
+import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_DIALOG_EDIT;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_DIALOG_TASK_DELETE;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_DIALOG_TASK_EDIT;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_KEY_EDIT;
@@ -78,15 +79,14 @@ public class MainActivity extends ExpandableListActivity {
 		final EditText etTitle = (EditText) view.findViewById(R.id.et_title);
 		final RadioGroup rgType = (RadioGroup) view.findViewById(R.id.rg_new_type);
 
+		// set task as default clicked radio button
 		rgType.check(R.id.rb_task);
-		addDialog.setCancelable(true);
 
 		addDialog.setNegativeButton(ACTIVITY_DIALOG_CANCEL, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
 				dialog.dismiss();
 			}
 		});
-
 		addDialog.setPositiveButton(ACTIVITY_DIALOG_ADD, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
 				String newTitle = etTitle.getText().toString();
@@ -102,32 +102,33 @@ public class MainActivity extends ExpandableListActivity {
 				}
 			}
 		});
+		addDialog.setCancelable(true);
 		addDialog.create();
 		addDialog.setView(view);
 		addDialog.show();
 	}
 
 	/**
-	 * TO
+	 * On long clicking on task lists, it is possible to edit the title of the task list. 
+	 * Therefore this edit dialog for editing the task list title will be opened.
+	 * The user should enter a title, otherwise nothing will be saved. 
 	 * 
-	 * @param taskList
+	 * @param taskList the task list object, where the title should be updated.
 	 */
 	private void createEditTaskListDialog(final LocalTaskList taskList) {
-		AlertDialog.Builder addDialog = new AlertDialog.Builder(this);
+		AlertDialog.Builder editDialog = new AlertDialog.Builder(this);
 		LayoutInflater layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View view = layoutInflater.inflate(R.layout.edit_dialog, null);
 
 		final EditText etTitle = (EditText) view.findViewById(R.id.et_title);
 		etTitle.setText(taskList.getTitle());
 
-		addDialog.setCancelable(true);
-		addDialog.setNegativeButton(ACTIVITY_DIALOG_CANCEL, new DialogInterface.OnClickListener() {
+		editDialog.setNegativeButton(ACTIVITY_DIALOG_CANCEL, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
 				dialog.dismiss();
 			}
 		});
-
-		addDialog.setPositiveButton(ACTIVITY_DIALOG_ADD, new DialogInterface.OnClickListener() {
+		editDialog.setPositiveButton(ACTIVITY_DIALOG_EDIT, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
 				String newTitle = etTitle.getText().toString();
 				if (newTitle != null && !newTitle.trim().equals("")) {
@@ -137,9 +138,10 @@ public class MainActivity extends ExpandableListActivity {
 				}
 			}
 		});
-		addDialog.create();
-		addDialog.setView(view);
-		addDialog.show();
+		editDialog.setCancelable(true);
+		editDialog.create();
+		editDialog.setView(view);
+		editDialog.show();
 	}
 
 	/**
@@ -324,9 +326,6 @@ public class MainActivity extends ExpandableListActivity {
 			if (groupToExpand != -1) {
 				// id found, expand this
 				getExpandableListView().expandGroup(groupToExpand);
-			} else {
-				// remove id from list, because it does't exists anymore.
-				expandedTaskLists.remove(expandedTaskList);
 			}
 		}
 	}
