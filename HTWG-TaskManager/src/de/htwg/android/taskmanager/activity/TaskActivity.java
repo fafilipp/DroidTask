@@ -17,20 +17,27 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import de.htwg.android.taskmanager.backend.database.DatabaseHandler;
 import de.htwg.android.taskmanager.backend.entity.LocalTask;
+
 public class TaskActivity extends Activity {
 
 	private String taskInternalId;
 	private DatabaseHandler dbHandler;
 	private LocalTask task;
 
+	/**
+	 * Default onActivityResult method of this activity.
+	 */
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if(requestCode == REQUEST_CODE_EDIT_ACTIVITY) {
+		if (requestCode == REQUEST_CODE_EDIT_ACTIVITY) {
 			finish();
 		}
 		super.onActivityResult(requestCode, resultCode, data);
 	}
 
+	/**
+	 * Default onCreate method of this activity.
+	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -54,12 +61,18 @@ public class TaskActivity extends Activity {
 
 	}
 
+	/**
+	 * Default onCreateOptionsMenu method of this activity.
+	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.task, menu);
 		return super.onCreateOptionsMenu(menu);
 	}
 
+	/**
+	 * Default onOptionsItemSelected method of this activity.
+	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -76,7 +89,16 @@ public class TaskActivity extends Activity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
-	
+
+	/**
+	 * Formats a given long - milli seconds date - into a string of the format
+	 * "yyyy/MMM/dd hh:mm:ss z"
+	 * 
+	 * @param input
+	 *            the long unix timestamp
+	 * @return the date formated in the following format:
+	 *         "yyyy/MMM/dd hh:mm:ss z"
+	 */
 	private String usingDateFormatter(long input) {
 		Date date = new Date(input);
 		Calendar calendar = new GregorianCalendar();
@@ -87,4 +109,3 @@ public class TaskActivity extends Activity {
 
 	}
 }
-

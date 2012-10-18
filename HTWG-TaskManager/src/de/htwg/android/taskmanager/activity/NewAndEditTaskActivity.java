@@ -41,6 +41,10 @@ public class NewAndEditTaskActivity extends Activity {
 	private DatabaseHandler dbHandler;
 	private List<LocalTaskList> listTaskList;
 
+	/**
+	 * This method sets the text given by the user to the task object and calls
+	 * updateTask when edit or addTask when add on the database handler.
+	 */
 	public void addOrUpdateTask() {
 		String title = etTitle.getText().toString();
 		if (title.equals("")) {
@@ -73,11 +77,15 @@ public class NewAndEditTaskActivity extends Activity {
 			LocalTaskList localTaskList = listTaskList.get(spinnerTasklist.getSelectedItemPosition());
 			dbHandler.addTask(localTaskList, task);
 		}
-		
-		// finish acitivity
+
+		// finish activity
 		finish();
 	}
 
+	/**
+	 * Loads the data of an given task when this Activity is in edit mode (not
+	 * new task!).
+	 */
 	public void loadTaskData() {
 		calendar.setTimeInMillis(task.getDue());
 		etTitle.setText(task.getTitle());
@@ -95,6 +103,9 @@ public class NewAndEditTaskActivity extends Activity {
 		timePickerDue.setCurrentMinute(calendar.get(Calendar.MINUTE));
 	}
 
+	/**
+	 * The default onCreate method of this activity.
+	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -137,12 +148,19 @@ public class NewAndEditTaskActivity extends Activity {
 		}
 	}
 
+	/**
+	 * Default onCreateOptionsMenu of this Activity
+	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.edit_task, menu);
 		return true;
 	}
 
+	/**
+	 * Default onOptionsItemSelected of this Activity. When saving it calls the
+	 * addOrUpdateTask method.
+	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {

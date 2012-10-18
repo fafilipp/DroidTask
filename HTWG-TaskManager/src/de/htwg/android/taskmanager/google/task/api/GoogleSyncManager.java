@@ -36,11 +36,12 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 		super.onPreExecute();
 		// TODO --> geht noch nicht, er ruft die Methoden aber auf.
 		Log.d(LOG_TAG, "onPreExecute -> opening loading dialog");
-		loadingDialog = new ProgressDialog(activity);
-		loadingDialog.setMessage("Please wait...");
-        loadingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        loadingDialog.setCancelable(false);
-        loadingDialog.show();
+		loadingDialog = ProgressDialog.show(activity, "Synchronisation", "Please wait", true, false);
+//		loadingDialog = new ProgressDialog(activity);
+//		loadingDialog.setMessage("Please wait...");
+//        loadingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+//        loadingDialog.setCancelable(false);
+//        loadingDialog.show();
 	}
 	
 	@Override
@@ -61,9 +62,10 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 	@Override
 	protected void onPostExecute(Void result) {
 		super.onPostExecute(result);
+		Log.d(LOG_TAG, "onPostExecute -> closing loading dialog");
 		// TODO --> geht noch nicht, er ruft die Methoden aber auf.		Log.d(LOG_TAG, "onPostExecute -> closing loading dialog");
 		if(loadingDialog != null) {
-			loadingDialog.hide();
+			loadingDialog.dismiss();
 		}
 	}
 	
