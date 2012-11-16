@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">HTWG-Task Manager</string>
+    <string name="app_name">Duty Care</string>
     <string name="preferences">Preferences</string>
     <string name="title">Title:</string>
     <string name="note">Notes:</string>
