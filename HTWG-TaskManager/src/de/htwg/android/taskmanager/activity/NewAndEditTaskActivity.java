@@ -79,13 +79,14 @@ public class NewAndEditTaskActivity extends Activity {
 	}
 
 	/**
-	 * Returns the date today in time millis. The date is trimmed to midnight of
+	 * Returns the date of yesterday in time millis. The date is trimmed to midnight of
 	 * the day (day start).
 	 * 
-	 * @return the today date in millis
+	 * @return the today of yesterday in milli seconds
 	 */
-	private long getDateToday() {
+	private long getDateYesterday() {
 		Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.DATE, -1);
 		calendar.set(Calendar.HOUR, 0);
 		calendar.set(Calendar.MINUTE, 0);
 		calendar.set(Calendar.SECOND, 0);
@@ -209,7 +210,7 @@ public class NewAndEditTaskActivity extends Activity {
 			Toast.makeText(this, "No title provided. Please input a title.", Toast.LENGTH_LONG).show();
 			return false;
 		}
-		if (dueDateTimestamp != 0 && dueDateTimestamp < getDateToday()) {
+		if (dueDateTimestamp != 0 && dueDateTimestamp < getDateYesterday()) {
 			Toast.makeText(this, "The due date is before today. Please provide a valid due date.", Toast.LENGTH_LONG).show();
 			return false;
 		}
