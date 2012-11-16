@@ -77,7 +77,7 @@ public class MainActivity extends ExpandableListActivity {
 		LayoutInflater layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View view = layoutInflater.inflate(R.layout.add_dialog, null);
 
-		final EditText etTitle = (EditText) view.findViewById(R.id.et_title);
+		final EditText etTitle = (EditText) view.findViewById(R.id.title);
 		final RadioGroup rgType = (RadioGroup) view.findViewById(R.id.rg_new_type);
 
 		// set task as default clicked radio button
@@ -139,6 +139,9 @@ public class MainActivity extends ExpandableListActivity {
 					taskList.modifyTitle(newTitle);
 					dbHandler.updateTaskList(taskList);
 					reloadTaskList();
+				} else {
+					Toast.makeText(MainActivity.this, "No title provided. Please input a title.", Toast.LENGTH_LONG).show();
+					createEditTaskListDialog(taskList);
 				}
 			}
 		});
