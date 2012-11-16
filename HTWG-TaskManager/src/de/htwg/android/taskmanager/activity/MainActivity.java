@@ -38,6 +38,7 @@ import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 import de.htwg.android.taskmanager.adapter.TaskListAdapter;
 import de.htwg.android.taskmanager.backend.database.DatabaseHandler;
 import de.htwg.android.taskmanager.backend.entity.LocalTask;
@@ -71,7 +72,7 @@ public class MainActivity extends ExpandableListActivity {
 	 * task the NewAndEditTaskActivity will be started, otherwise on the task
 	 * list, the title will be set and saved into the database.
 	 */
-	private void createAddDialog() {
+	private void createAddDialog(int rbcheck) {
 		AlertDialog.Builder addDialog = new AlertDialog.Builder(this);
 		LayoutInflater layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View view = layoutInflater.inflate(R.layout.add_dialog, null);
@@ -80,7 +81,7 @@ public class MainActivity extends ExpandableListActivity {
 		final RadioGroup rgType = (RadioGroup) view.findViewById(R.id.rg_new_type);
 
 		// set task as default clicked radio button
-		rgType.check(R.id.rb_task);
+		rgType.check(rbcheck);
 
 		addDialog.setNegativeButton(ACTIVITY_DIALOG_CANCEL, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
@@ -90,15 +91,16 @@ public class MainActivity extends ExpandableListActivity {
 		addDialog.setPositiveButton(ACTIVITY_DIALOG_ADD, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
 				String newTitle = etTitle.getText().toString();
-				if (rgType.getCheckedRadioButtonId() == R.id.rb_task) {
-					if (newTitle != null && newTitle.trim().equals("")) {
+				if (newTitle != null && !newTitle.trim().equals("")) {
+					if (rgType.getCheckedRadioButtonId() == R.id.rb_task) {
 						startNewAndEditActivity(newTitle, false);
-					}
-				} else if (rgType.getCheckedRadioButtonId() == R.id.rb_tasklist) {
-					if (newTitle != null && !newTitle.trim().equals("")) {
+					} else if (rgType.getCheckedRadioButtonId() == R.id.rb_tasklist) {
 						addNewTaskList(newTitle);
 						reloadTaskList();
 					}
+				} else {
+					Toast.makeText(MainActivity.this, "No title provided. Please input a title.", Toast.LENGTH_LONG).show();
+					createAddDialog(rgType.getCheckedRadioButtonId());
 				}
 			}
 		});
@@ -109,11 +111,13 @@ public class MainActivity extends ExpandableListActivity {
 	}
 
 	/**
-	 * On long clicking on task lists, it is possible to edit the title of the task list. 
-	 * Therefore this edit dialog for editing the task list title will be opened.
-	 * The user should enter a title, otherwise nothing will be saved. 
+	 * On long clicking on task lists, it is possible to edit the title of the
+	 * task list. Therefore this edit dialog for editing the task list title
+	 * will be opened. The user should enter a title, otherwise nothing will be
+	 * saved.
 	 * 
-	 * @param taskList the task list object, where the title should be updated.
+	 * @param taskList
+	 *            the task list object, where the title should be updated.
 	 */
 	private void createEditTaskListDialog(final LocalTaskList taskList) {
 		AlertDialog.Builder editDialog = new AlertDialog.Builder(this);
@@ -304,7 +308,7 @@ public class MainActivity extends ExpandableListActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.add:
-			createAddDialog();
+			createAddDialog(R.id.rb_task);
 			return true;
 		case R.id.sync:
 			startSync();
@@ -362,12 +366,12 @@ public class MainActivity extends ExpandableListActivity {
 	 */
 	private void startNewAndEditActivity(String taskIdOrTitle, boolean edit) {
 		Intent editTaskIntent = new Intent(MainActivity.this, NewAndEditTaskActivity.class);
+		editTaskIntent.putExtra(ACTIVITY_KEY_EDIT, edit);
 		if (edit) {
 			editTaskIntent.putExtra(ACTIVITY_KEY_TASK_ID, taskIdOrTitle);
 		} else {
-			editTaskIntent.putExtra(ACTIVITY_KEY_EDIT, edit);
+			editTaskIntent.putExtra(ACTIVITY_KEY_TASK_TITLE, taskIdOrTitle);
 		}
-		editTaskIntent.putExtra(ACTIVITY_KEY_TASK_TITLE, taskIdOrTitle);
 		startActivityForResult(editTaskIntent, REQUEST_CODE_NEW_ACTIVITY);
 	}
 

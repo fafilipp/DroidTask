@@ -46,19 +46,19 @@ public class NewAndEditTaskActivity extends Activity {
 	 * updateTask when edit or addTask when add on the database handler.
 	 */
 	public void addOrUpdateTask() {
+		// Get Attributes from View-Objects
 		String title = etTitle.getText().toString();
-		if (title.equals("")) {
-			Toast.makeText(this, "Title is empty! Add or Update not possible.", Toast.LENGTH_LONG).show();
-			return;
-		}
 		String note = etNote.getText().toString();
 		boolean completed = checkBoxCompleted.isChecked();
-		int day = datePickerDue.getDayOfMonth();
-		int year = datePickerDue.getYear();
-		int month = datePickerDue.getMonth();
-		int hour = timePickerDue.getCurrentHour();
-		int minute = timePickerDue.getCurrentMinute();
+		long dueDateTimestamp = getDueDateTimestamp();
 
+		// Check if input data is valid
+		if (!validateData(title, note, dueDateTimestamp)) {
+			// Some data is invalid, don't save anything.
+			return;
+		}
+
+		// Save data to DTO and save it to the database
 		task.modifyTitle(title);
 		task.modifyNotes(note);
 		if (completed) {
@@ -67,10 +67,9 @@ public class NewAndEditTaskActivity extends Activity {
 		} else {
 			task.modifyStatus(EStatus.NEEDS_ACTION);
 		}
-		calendar.set(year, month, day, hour, minute);
-		long timestamp = calendar.getTimeInMillis();
-		task.modifyDue(timestamp);
+		task.modifyDue(dueDateTimestamp);
 
+		// Save the DTO to the database
 		if (edit) {
 			dbHandler.updateTask(task);
 		} else {
@@ -78,8 +77,39 @@ public class NewAndEditTaskActivity extends Activity {
 			dbHandler.addTask(localTaskList, task);
 		}
 
-		// finish activity
+		// Finish Activity, return to previous activity
 		finish();
+	}
+
+	/**
+	 * Returns the date today in time millis. The date is trimmed to midnight of
+	 * the day (day start).
+	 * 
+	 * @return the today date in millis
+	 */
+	private long getDateToday() {
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.HOUR, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+		long dateToday = calendar.getTimeInMillis();
+		return dateToday;
+	}
+
+	/**
+	 * Gets the Timestamp value for the inputed due date in the View.
+	 * 
+	 * @return the timestamp value for the due date
+	 */
+	private long getDueDateTimestamp() {
+		int day = datePickerDue.getDayOfMonth();
+		int year = datePickerDue.getYear();
+		int month = datePickerDue.getMonth();
+		int hour = timePickerDue.getCurrentHour();
+		int minute = timePickerDue.getCurrentMinute();
+		calendar.set(year, month, day, hour, minute);
+		return calendar.getTimeInMillis();
 	}
 
 	/**
@@ -169,5 +199,33 @@ public class NewAndEditTaskActivity extends Activity {
 			break;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	/**
+	 * Validates the given properties for no false data.
+	 * 
+	 * @param title
+	 *            the title of the task (validated for not null and not "")
+	 * @param note
+	 *            the notes for this task (validated for not null and not "")
+	 * @param dueDateTimestamp
+	 *            (validated for later then today)
+	 * @return true if the input data is valid, otherwise false
+	 */
+	private boolean validateData(String title, String note, long dueDateTimestamp) {
+		if (title == null || title.trim().equals("")) {
+			Toast.makeText(this, "No title provided. Please input a title.", Toast.LENGTH_LONG).show();
+			return false;
+		}
+		if (note == null || note.trim().equals("")) {
+			Toast.makeText(this, "No notes provided. Please input some notes.", Toast.LENGTH_LONG).show();
+			return false;
+		}
+		if (dueDateTimestamp != 0 && dueDateTimestamp < getDateToday()) {
+			Toast.makeText(this, "The due date is before today. Please provide a valid due date.", Toast.LENGTH_LONG).show();
+			return false;
+		}
+		return true;
+
 	}
 }
