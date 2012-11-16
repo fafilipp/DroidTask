@@ -18,8 +18,6 @@ import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 import de.htwg.android.taskmanager.backend.database.DatabaseHandler;
 import de.htwg.android.taskmanager.backend.entity.LocalTask;
@@ -32,7 +30,6 @@ public class NewAndEditTaskActivity extends Activity {
 	private EditText etTitle;
 	private EditText etNote;
 	private DatePicker datePickerDue;
-	private TimePicker timePickerDue;
 	private Calendar calendar;
 	private CheckBox checkBoxCompleted;
 	private Spinner spinnerTasklist;
@@ -106,9 +103,7 @@ public class NewAndEditTaskActivity extends Activity {
 		int day = datePickerDue.getDayOfMonth();
 		int year = datePickerDue.getYear();
 		int month = datePickerDue.getMonth();
-		int hour = timePickerDue.getCurrentHour();
-		int minute = timePickerDue.getCurrentMinute();
-		calendar.set(year, month, day, hour, minute);
+		calendar.set(year, month, day, 0, 0);
 		return calendar.getTimeInMillis();
 	}
 
@@ -129,8 +124,6 @@ public class NewAndEditTaskActivity extends Activity {
 			break;
 		}
 		datePickerDue.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
-		timePickerDue.setCurrentHour(calendar.get(Calendar.HOUR));
-		timePickerDue.setCurrentMinute(calendar.get(Calendar.MINUTE));
 	}
 
 	/**
@@ -139,19 +132,20 @@ public class NewAndEditTaskActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.new_and_edit_task);
-
 		edit = getIntent().getExtras().getBoolean(ACTIVITY_KEY_EDIT);
-
+		if(edit) {
+			setContentView(R.layout.edit_task);
+		} else {
+			setContentView(R.layout.new_task);
+		}
+		
 		dbHandler = new DatabaseHandler(this);
 		calendar = Calendar.getInstance();
 
 		etTitle = (EditText) findViewById(R.id.title);
 		etNote = (EditText) findViewById(R.id.notes);
 		datePickerDue = (DatePicker) findViewById(R.id.date);
-		timePickerDue = (TimePicker) findViewById(R.id.time);
 		checkBoxCompleted = (CheckBox) findViewById(R.id.completed);
-		spinnerTasklist = (Spinner) findViewById(R.id.tasklist);
 
 		if (edit) {
 			taskInternalId = getIntent().getExtras().getString(ACTIVITY_KEY_TASK_ID);
@@ -162,9 +156,7 @@ public class NewAndEditTaskActivity extends Activity {
 			String title = getIntent().getExtras().getString(ACTIVITY_KEY_TASK_TITLE);
 			task.setTitle(title);
 			etTitle.setText(title);
-
-			TextView tvTaskList = (TextView) findViewById(R.id.lb_tasklist);
-			tvTaskList.setVisibility(View.VISIBLE);
+			spinnerTasklist = (Spinner) findViewById(R.id.tasklist);
 			spinnerTasklist.setVisibility(View.VISIBLE);
 
 			listTaskList = dbHandler.getTaskLists();
@@ -217,15 +209,14 @@ public class NewAndEditTaskActivity extends Activity {
 			Toast.makeText(this, "No title provided. Please input a title.", Toast.LENGTH_LONG).show();
 			return false;
 		}
-		if (note == null || note.trim().equals("")) {
-			Toast.makeText(this, "No notes provided. Please input some notes.", Toast.LENGTH_LONG).show();
-			return false;
-		}
 		if (dueDateTimestamp != 0 && dueDateTimestamp < getDateToday()) {
 			Toast.makeText(this, "The due date is before today. Please provide a valid due date.", Toast.LENGTH_LONG).show();
 			return false;
 		}
+		if (note == null || note.trim().equals("")) {
+			Toast.makeText(this, "No notes provided. Please input some notes.", Toast.LENGTH_LONG).show();
+			return false;
+		}
 		return true;
-
 	}
 }

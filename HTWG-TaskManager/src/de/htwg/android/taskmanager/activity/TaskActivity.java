@@ -6,8 +6,6 @@ import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQ
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -17,6 +15,7 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import de.htwg.android.taskmanager.backend.database.DatabaseHandler;
 import de.htwg.android.taskmanager.backend.entity.LocalTask;
+import de.htwg.android.taskmanager.backend.util.EStatus;
 
 public class TaskActivity extends Activity {
 
@@ -41,13 +40,13 @@ public class TaskActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.task);
+		setContentView(R.layout.view_task);
 
 		TextView tvTitel = (TextView) findViewById(R.id.title);
 		TextView tvNote = (TextView) findViewById(R.id.notes);
-		TextView tvDue = (TextView) findViewById(R.id.due);
-		TextView tvComplete = (TextView) findViewById(R.id.completed);
-		TextView tvStatus = (TextView) findViewById(R.id.status);
+		TextView tvDueOrCompletedTitle = (TextView) findViewById(R.id.dueOrCompletedTitle);
+		TextView tvDueOrCompleted = (TextView) findViewById(R.id.dueOrCompleted);
+		// CheckBox tvStatus = (CheckBox) findViewById(R.id.status);
 
 		taskInternalId = getIntent().getExtras().getString(ACTIVITY_KEY_TASK_ID);
 
@@ -55,10 +54,15 @@ public class TaskActivity extends Activity {
 		task = dbHandler.getTaskByInternalId(taskInternalId);
 		tvTitel.setText(task.getTitle());
 		tvNote.setText(task.getNotes());
-		tvDue.setText(usingDateFormatter(task.getDue()));
-		tvComplete.setText(usingDateFormatter(task.getCompleted()));
-		tvStatus.setText(task.getStatus().toString());
 
+		if (task.getStatus().equals(EStatus.COMPLETED)) {
+			// tvStatus.setChecked(true);
+			tvDueOrCompletedTitle.setText("Completion Date");
+			tvDueOrCompleted.setText(usingDateFormatter(task.getCompleted()));
+		} else {
+			// tvStatus.setChecked(false);
+			tvDueOrCompleted.setText(usingDateFormatter(task.getDue()));
+		}
 	}
 
 	/**
@@ -100,12 +104,8 @@ public class TaskActivity extends Activity {
 	 *         "yyyy/MMM/dd hh:mm:ss z"
 	 */
 	private String usingDateFormatter(long input) {
-		Date date = new Date(input);
-		Calendar calendar = new GregorianCalendar();
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MMM/dd hh:mm:ss z");
-		sdf.setCalendar(calendar);
-		calendar.setTime(date);
-		return sdf.format(date);
-
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTimeInMillis(input);
+		return new SimpleDateFormat("dd.MM.yyyy").format(calendar.getTime());
 	}
 }
