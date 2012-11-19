@@ -8,6 +8,7 @@ import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQ
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import android.R.drawable;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -100,7 +101,7 @@ public class TaskActivity extends Activity {
 	}
 
 	private void showDeleteDialog(final String internalId, final String title) {
-        new AlertDialog.Builder(this).setTitle("Delete " + title)
+        new AlertDialog.Builder(this).setTitle("Delete " + title).setIcon(drawable.ic_delete)
         .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
             	dbHandler.deleteTask(internalId);

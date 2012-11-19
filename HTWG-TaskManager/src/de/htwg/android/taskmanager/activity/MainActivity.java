@@ -19,6 +19,7 @@ import java.util.Observer;
 import java.util.Set;
 import java.util.TreeSet;
 
+import android.R.drawable;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.AlertDialog;
@@ -86,7 +87,6 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 
 		// set task as default clicked radio button
 		rgType.check(rbcheck);
-
 		addDialog.setNegativeButton(ACTIVITY_DIALOG_CANCEL, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
 				dialog.dismiss();
@@ -130,7 +130,7 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 
 		final EditText etTitle = (EditText) view.findViewById(R.id.et_title);
 		etTitle.setText(taskList.getTitle());
-
+		
 		editDialog.setNegativeButton(ACTIVITY_DIALOG_CANCEL, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
 				dialog.dismiss();
@@ -390,7 +390,7 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 	 *            the title id of the task or tasklist
 	 */
 	private void showDeleteDialog(final int type, final String internalId, final String title) {
-		new AlertDialog.Builder(this).setTitle("Delete " + title).setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+		new AlertDialog.Builder(this).setTitle("Delete " + title).setIcon(drawable.ic_delete).setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {
 				if (type == TYPE_TASKLIST) {
 					dbHandler.deleteTaskList(internalId);
