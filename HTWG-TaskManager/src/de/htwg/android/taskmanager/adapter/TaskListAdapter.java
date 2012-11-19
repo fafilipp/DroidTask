@@ -42,7 +42,7 @@ public class TaskListAdapter extends BaseExpandableListAdapter {
 	 * (LocalTask).
 	 */
 	public long getChildId(int groupPosition, int childPosition) {
-		return childPosition;
+		return tasklists.get(groupPosition).getTaskList().get(childPosition).getInternalId().hashCode();
 	}
 
 	/**
@@ -84,7 +84,7 @@ public class TaskListAdapter extends BaseExpandableListAdapter {
 	 * Returns the group position for a given group position.
 	 */
 	public long getGroupId(int groupPosition) {
-		return groupPosition;
+		return tasklists.get(groupPosition).getInternalId().hashCode();
 	}
 
 	/**

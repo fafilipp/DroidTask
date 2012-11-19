@@ -43,12 +43,6 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 	}
 
 	@Override
-	protected void onPreExecute() {
-		super.onPreExecute();
-		progressDialog = ProgressDialog.show(activity, "Syncing", "Please wait");
-	}
-
-	@Override
 	protected Void doInBackground(Void... params) {
 		try {
 			DatabaseHandler dbHandler = new DatabaseHandler(activity);
@@ -70,6 +64,12 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 		observable.setChanged();
 		observable.notifyObservers();
 		observable.deleteObserver(activity);
+	}
+
+	@Override
+	protected void onPreExecute() {
+		super.onPreExecute();
+		progressDialog = ProgressDialog.show(activity, "Syncing", "Please wait");
 	}
 
 	private Task searchRemoteTaskForLocalTask(List<Task> remoteTasks, LocalTask localTask) {

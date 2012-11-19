@@ -51,6 +51,9 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 	private TaskListAdapter listAdapter;
 	private Set<String> expandedTaskLists = new TreeSet<String>();
 
+	private int TYPE_TASKLIST = 101;
+	private int TYPE_TASK = 102;
+
 	/**
 	 * A new task list will be created and added to the database, using the
 	 * database handler.
@@ -162,9 +165,7 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 	 *            the id of this task.
 	 */
 	private void deleteTask(String taskId, String title) {
-		dbHandler.deleteTask(taskId);
-		reloadTaskList();
-		Toast.makeText(MainActivity.this, String.format("Task '%s' deleted.", title), Toast.LENGTH_LONG).show();
+		showDeleteDialog(TYPE_TASK, taskId, title);
 	}
 
 	/**
@@ -175,9 +176,7 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 	 * @param title
 	 */
 	private void deleteTaskList(String taskListId, String title) {
-		dbHandler.deleteTaskList(taskListId);
-		reloadTaskList();
-		Toast.makeText(MainActivity.this, String.format("Tasklist '%s' deleted.", title), Toast.LENGTH_LONG).show();
+		showDeleteDialog(TYPE_TASKLIST, taskListId, title);
 	}
 
 	/**
@@ -376,6 +375,37 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 		}
 		// Group Position not found, returning -1
 		return -1;
+	}
+
+	/**
+	 * On delete shows up a delete dialog to confirm the deletion, on
+	 * confirmation the tasklist or task will be deleted and the expandable list
+	 * view reloaded.
+	 * 
+	 * @param type
+	 *            one of the constants (TYPE_TASK or TYPE_TASKLIST)
+	 * @param internalId
+	 *            the internal id of the task or tasklist
+	 * @param title
+	 *            the title id of the task or tasklist
+	 */
+	private void showDeleteDialog(final int type, final String internalId, final String title) {
+		new AlertDialog.Builder(this).setTitle("Delete " + title).setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int whichButton) {
+				if (type == TYPE_TASKLIST) {
+					dbHandler.deleteTaskList(internalId);
+					Toast.makeText(MainActivity.this, String.format("Tasklist '%s' deleted.", title), Toast.LENGTH_LONG).show();
+				} else if (type == TYPE_TASK) {
+					dbHandler.deleteTask(internalId);
+					Toast.makeText(MainActivity.this, String.format("Task '%s' deleted.", title), Toast.LENGTH_LONG).show();
+				}
+				reloadTaskList();
+			}
+		}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int whichButton) {
+				dialog.cancel();
+			}
+		}).show();
 	}
 
 	/**

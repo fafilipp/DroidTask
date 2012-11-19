@@ -1,7 +1,8 @@
 package de.htwg.android.taskmanager.activity;
 
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_KEY_EDIT;
-import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.*;
+import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_KEY_TASK_ID;
+import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_KEY_TASK_TITLE;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQUEST_CODE_EDIT_ACTIVITY;
 
 import java.text.SimpleDateFormat;
@@ -9,6 +10,8 @@ import java.util.Calendar;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -84,12 +87,7 @@ public class TaskActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.delete:
-			dbHandler.deleteTask(task.getInternalId());
-			Intent resultIntent = new Intent();
-			resultIntent.putExtra(ACTIVITY_KEY_EDIT, false);
-			resultIntent.putExtra(ACTIVITY_KEY_TASK_TITLE, task.getTitle());
-			setResult(Activity.RESULT_OK, resultIntent);
-			finish();
+			showDeleteDialog(task.getInternalId(), task.getTitle());
 			return true;
 		case R.id.edit:
 			Intent editTaskIntent = new Intent(TaskActivity.this, NewAndEditTaskActivity.class);
@@ -101,6 +99,26 @@ public class TaskActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 
+	private void showDeleteDialog(final String internalId, final String title) {
+        new AlertDialog.Builder(this).setTitle("Delete " + title)
+        .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+            	dbHandler.deleteTask(internalId);
+    			Intent resultIntent = new Intent();
+    			resultIntent.putExtra(ACTIVITY_KEY_EDIT, false);
+    			resultIntent.putExtra(ACTIVITY_KEY_TASK_TITLE, title);
+    			setResult(Activity.RESULT_OK, resultIntent);
+    			finish();
+            }
+        })
+        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                dialog.cancel();
+            }
+        })
+        .show();
+    }
+	
 	/**
 	 * Formats a given long - milli seconds date - into a string of the format
 	 * "yyyy/MMM/dd hh:mm:ss z"
