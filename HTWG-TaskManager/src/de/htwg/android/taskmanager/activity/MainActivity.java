@@ -10,6 +10,7 @@ import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACT
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_KEY_TASK_TITLE;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.GOOGLE_ACCOUNT_TYPE;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.LOG_TAG;
+import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQUEST_CODE_EDIT_ACTIVITY;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQUEST_CODE_NEW_ACTIVITY;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQUEST_CODE_SHOW_ACTIVITY;
 
@@ -61,6 +62,7 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 		LocalTaskList taskList = new LocalTaskList();
 		taskList.setTitle(title);
 		dbHandler.addTaskList(taskList);
+		Toast.makeText(this, String.format("Tasklist '%s' created.", title), Toast.LENGTH_LONG).show();
 	}
 
 	/**
@@ -135,8 +137,11 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 			public void onClick(DialogInterface dialog, int which) {
 				String newTitle = etTitle.getText().toString();
 				if (newTitle != null && !newTitle.trim().equals("")) {
+					String oldTitle = taskList.getTitle();
 					taskList.modifyTitle(newTitle);
 					dbHandler.updateTaskList(taskList);
+					Toast.makeText(MainActivity.this, String.format("Tasklist '%s' renamed in '%s'.", oldTitle, newTitle),
+							Toast.LENGTH_LONG).show();
 					reloadTaskList();
 				} else {
 					Toast.makeText(MainActivity.this, "No title provided. Please input a title.", Toast.LENGTH_LONG).show();
@@ -156,9 +161,10 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 	 * @param taskId
 	 *            the id of this task.
 	 */
-	private void deleteTask(String taskId) {
+	private void deleteTask(String taskId, String title) {
 		dbHandler.deleteTask(taskId);
 		reloadTaskList();
+		Toast.makeText(MainActivity.this, String.format("Task '%s' deleted.", title), Toast.LENGTH_LONG).show();
 	}
 
 	/**
@@ -166,10 +172,12 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 	 * 
 	 * @param taskListId
 	 *            the id of this task list.
+	 * @param title
 	 */
-	private void deleteTaskList(String taskListId) {
+	private void deleteTaskList(String taskListId, String title) {
 		dbHandler.deleteTaskList(taskListId);
 		reloadTaskList();
+		Toast.makeText(MainActivity.this, String.format("Tasklist '%s' deleted.", title), Toast.LENGTH_LONG).show();
 	}
 
 	/**
@@ -179,11 +187,24 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == REQUEST_CODE_NEW_ACTIVITY) {
-			reloadTaskList();
+			String title = data.getExtras().getString(ACTIVITY_KEY_TASK_TITLE);
+			Toast.makeText(this, String.format("Task '%s' created.", title), Toast.LENGTH_LONG).show();
+		} else if (requestCode == REQUEST_CODE_EDIT_ACTIVITY) {
+			String title = data.getExtras().getString(ACTIVITY_KEY_TASK_TITLE);
+			Toast.makeText(this, String.format("Task '%s' edited.", title), Toast.LENGTH_LONG).show();
+		} else if (requestCode == REQUEST_CODE_SHOW_ACTIVITY) {
+			if (data != null) {
+				boolean edit = data.getExtras().getBoolean(ACTIVITY_KEY_EDIT);
+				String title = data.getExtras().getString(ACTIVITY_KEY_TASK_TITLE);
+				if (edit) {
+					Toast.makeText(this, String.format("Task '%s' edited.", title), Toast.LENGTH_LONG).show();
+				} else {
+					Toast.makeText(this, String.format("Task '%s' deleted.", title), Toast.LENGTH_LONG).show();
+				}
+			}
+			Log.i(LOG_TAG, "Task showed");
 		}
-		if (requestCode == REQUEST_CODE_SHOW_ACTIVITY) {
-			reloadTaskList();
-		}
+		reloadTaskList();
 		super.onActivityResult(requestCode, resultCode, data);
 	}
 
@@ -210,18 +231,20 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 		if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
 			int childPos = ExpandableListView.getPackedPositionChild(info.packedPosition);
 			String taskId = ((LocalTask) listAdapter.getChild(groupPos, childPos)).getInternalId();
+			String title = ((LocalTask) listAdapter.getChild(groupPos, childPos)).getTitle();
 			if (clicked.equals(ACTIVITY_DIALOG_TASK_EDIT)) {
 				startNewAndEditActivity(taskId, true);
 			} else if (clicked.equals(ACTIVITY_DIALOG_TASK_DELETE)) {
-				deleteTask(taskId);
+				deleteTask(taskId, title);
 			}
 			reloadTaskList();
 		} else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
+			String title = ((LocalTaskList) listAdapter.getGroup(groupPos)).getTitle();
 			String taskListId = ((LocalTaskList) listAdapter.getGroup(groupPos)).getInternalId();
 			if (clicked.equals(ACTIVITY_DIALOG_TASK_EDIT)) {
 				createEditTaskListDialog((LocalTaskList) listAdapter.getGroup(groupPos));
 			} else if (clicked.equals(ACTIVITY_DIALOG_TASK_DELETE)) {
-				deleteTaskList(taskListId);
+				deleteTaskList(taskListId, title);
 			}
 		}
 		reloadTaskList();
@@ -370,10 +393,11 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 		editTaskIntent.putExtra(ACTIVITY_KEY_EDIT, edit);
 		if (edit) {
 			editTaskIntent.putExtra(ACTIVITY_KEY_TASK_ID, taskIdOrTitle);
+			startActivityForResult(editTaskIntent, REQUEST_CODE_EDIT_ACTIVITY);
 		} else {
 			editTaskIntent.putExtra(ACTIVITY_KEY_TASK_TITLE, taskIdOrTitle);
+			startActivityForResult(editTaskIntent, REQUEST_CODE_NEW_ACTIVITY);
 		}
-		startActivityForResult(editTaskIntent, REQUEST_CODE_NEW_ACTIVITY);
 	}
 
 	/**
@@ -398,6 +422,7 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 		Log.d(LOG_TAG, "Amount of Google accounts on device = " + accounts.length);
 		if (accounts.length < 1) {
 			Log.i(LOG_TAG, "No Google accounts found, no sync possible.");
+			Toast.makeText(this, "No Google Account found on device.", Toast.LENGTH_LONG).show();
 		} else {
 			Log.d(LOG_TAG, "Selected Google account = " + accounts[0].name);
 			GoogleSyncManager googleSyncManager = new GoogleSyncManager(this, accounts[0]);

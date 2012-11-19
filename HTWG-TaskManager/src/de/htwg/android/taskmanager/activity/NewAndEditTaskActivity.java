@@ -9,6 +9,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -67,7 +68,11 @@ public class NewAndEditTaskActivity extends Activity {
 		} else {
 			task.modifyStatus(EStatus.NEEDS_ACTION);
 		}
-		task.modifyDue(dueDateTimestamp);
+		if (dueDateGiven.isChecked()) {
+			task.modifyDue(dueDateTimestamp);
+		} else {
+			task.modifyDue(0);
+		}
 
 		// Save the DTO to the database
 		if (edit) {
@@ -78,6 +83,9 @@ public class NewAndEditTaskActivity extends Activity {
 		}
 
 		// Finish Activity, return to previous activity
+		Intent resultIntent = new Intent();
+		resultIntent.putExtra(ACTIVITY_KEY_TASK_TITLE, title);
+		setResult(Activity.RESULT_OK, resultIntent);
 		finish();
 	}
 
@@ -107,6 +115,7 @@ public class NewAndEditTaskActivity extends Activity {
 		int day = datePickerDue.getDayOfMonth();
 		int year = datePickerDue.getYear();
 		int month = datePickerDue.getMonth();
+		Calendar calendar = Calendar.getInstance();
 		calendar.set(year, month, day, 0, 0);
 		return calendar.getTimeInMillis();
 	}
@@ -235,15 +244,10 @@ public class NewAndEditTaskActivity extends Activity {
 			Toast.makeText(this, "No title provided. Please input a title.", Toast.LENGTH_LONG).show();
 			return false;
 		}
-		if (dueDateTimestamp != 0 && dueDateTimestamp < getDateYesterday()) {
+		if (dueDateGiven.isChecked() && dueDateTimestamp != 0 && dueDateTimestamp < getDateYesterday()) {
 			Toast.makeText(this, "The due date is before today. Please provide a valid due date.", Toast.LENGTH_LONG).show();
 			return false;
 		}
-		// if (note == null || note.trim().equals("")) {
-		// Toast.makeText(this, "No notes provided. Please input some notes.",
-		// Toast.LENGTH_LONG).show();
-		// return false;
-		// }
 		return true;
 	}
 }

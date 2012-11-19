@@ -1,12 +1,13 @@
 package de.htwg.android.taskmanager.activity;
 
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_KEY_EDIT;
-import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_KEY_TASK_ID;
+import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.*;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQUEST_CODE_EDIT_ACTIVITY;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -29,6 +30,8 @@ public class TaskActivity extends Activity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == REQUEST_CODE_EDIT_ACTIVITY) {
+			data.putExtra(ACTIVITY_KEY_EDIT, true);
+			setResult(Activity.RESULT_OK, data);
 			finish();
 		}
 		super.onActivityResult(requestCode, resultCode, data);
@@ -82,6 +85,10 @@ public class TaskActivity extends Activity {
 		switch (item.getItemId()) {
 		case R.id.delete:
 			dbHandler.deleteTask(task.getInternalId());
+			Intent resultIntent = new Intent();
+			resultIntent.putExtra(ACTIVITY_KEY_EDIT, false);
+			resultIntent.putExtra(ACTIVITY_KEY_TASK_TITLE, task.getTitle());
+			setResult(Activity.RESULT_OK, resultIntent);
 			finish();
 			return true;
 		case R.id.edit:
@@ -103,6 +110,7 @@ public class TaskActivity extends Activity {
 	 * @return the date formated in the following format:
 	 *         "yyyy/MMM/dd hh:mm:ss z"
 	 */
+	@SuppressLint("SimpleDateFormat")
 	private String usingDateFormatter(long input) {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTimeInMillis(input);
