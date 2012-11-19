@@ -62,6 +62,7 @@
 
             <DatePicker
                 android:id="@+id/date"
+                android:layout_weight="1.00"
                 android:layout_width="0dip"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
@@ -83,7 +84,7 @@
         <EditText
             android:id="@+id/notes"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dip"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
             android:layout_weight="1.00"

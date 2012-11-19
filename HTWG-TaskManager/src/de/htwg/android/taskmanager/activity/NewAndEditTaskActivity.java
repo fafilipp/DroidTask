@@ -82,8 +82,8 @@ public class NewAndEditTaskActivity extends Activity {
 	}
 
 	/**
-	 * Returns the date of yesterday in time millis. The date is trimmed to midnight of
-	 * the day (day start).
+	 * Returns the date of yesterday in time millis. The date is trimmed to
+	 * midnight of the day (day start).
 	 * 
 	 * @return the today of yesterday in milli seconds
 	 */
@@ -126,7 +126,7 @@ public class NewAndEditTaskActivity extends Activity {
 			checkBoxCompleted.setChecked(true);
 			break;
 		}
-		if(task.getDue() == 0) {
+		if (task.getDue() == 0) {
 			dueDateGiven.setChecked(false);
 		} else {
 			calendar.setTimeInMillis(task.getDue());
@@ -142,12 +142,12 @@ public class NewAndEditTaskActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		edit = getIntent().getExtras().getBoolean(ACTIVITY_KEY_EDIT);
-		if(edit) {
+		if (edit) {
 			setContentView(R.layout.edit_task);
 		} else {
 			setContentView(R.layout.new_task);
 		}
-		
+
 		dbHandler = new DatabaseHandler(this);
 		calendar = Calendar.getInstance();
 
@@ -167,8 +167,6 @@ public class NewAndEditTaskActivity extends Activity {
 			task.setTitle(title);
 			etTitle.setText(title);
 			spinnerTasklist = (Spinner) findViewById(R.id.tasklist);
-			spinnerTasklist.setVisibility(View.VISIBLE);
-
 			listTaskList = dbHandler.getTaskLists();
 			List<String> list = new ArrayList<String>();
 			for (LocalTaskList taskList : listTaskList) {
@@ -178,14 +176,20 @@ public class NewAndEditTaskActivity extends Activity {
 			dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 			spinnerTasklist.setAdapter(dataAdapter);
 		}
-		
+
 		dueDateGiven.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				if(isChecked) {
+				if (isChecked) {
+					// if timeinmillis == 0, then set calendar to today
+					if (calendar.getTimeInMillis() == 0) {
+						calendar = Calendar.getInstance();
+					}
 					datePickerDue.setVisibility(View.VISIBLE);
-				} else {
-					calendar.setTimeInMillis(0);
 					datePickerDue.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+				} else {
+					Calendar zero = Calendar.getInstance();
+					zero.setTimeInMillis(0);
+					datePickerDue.updateDate(zero.get(Calendar.YEAR), zero.get(Calendar.MONTH), zero.get(Calendar.DAY_OF_MONTH));
 					datePickerDue.setVisibility(View.INVISIBLE);
 				}
 			}
@@ -235,10 +239,11 @@ public class NewAndEditTaskActivity extends Activity {
 			Toast.makeText(this, "The due date is before today. Please provide a valid due date.", Toast.LENGTH_LONG).show();
 			return false;
 		}
-//		if (note == null || note.trim().equals("")) {
-//			Toast.makeText(this, "No notes provided. Please input some notes.", Toast.LENGTH_LONG).show();
-//			return false;
-//		}
+		// if (note == null || note.trim().equals("")) {
+		// Toast.makeText(this, "No notes provided. Please input some notes.",
+		// Toast.LENGTH_LONG).show();
+		// return false;
+		// }
 		return true;
 	}
 }
