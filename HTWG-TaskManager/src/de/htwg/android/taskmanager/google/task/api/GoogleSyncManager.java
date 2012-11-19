@@ -3,9 +3,9 @@ package de.htwg.android.taskmanager.google.task.api;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.LOG_TAG;
 
 import java.util.List;
+import java.util.Observable;
 
 import android.accounts.Account;
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -14,6 +14,7 @@ import com.google.api.client.util.DateTime;
 import com.google.api.services.tasks.model.Task;
 import com.google.api.services.tasks.model.TaskList;
 
+import de.htwg.android.taskmanager.activity.MainActivity;
 import de.htwg.android.taskmanager.backend.database.DatabaseHandler;
 import de.htwg.android.taskmanager.backend.entity.LocalTask;
 import de.htwg.android.taskmanager.backend.entity.LocalTaskList;
@@ -22,28 +23,31 @@ import de.htwg.android.taskmanager.google.task.api.util.GoogleSyncException;
 
 public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 
-	private Activity activity;
+	public class MyObservable extends Observable {
+		public void setChanged() {
+			super.setChanged();
+		}
+	}
+
+	private MyObservable observable;
+
+	private MainActivity activity;
 	private Account account;
-	private ProgressDialog loadingDialog;
-	
-	public GoogleSyncManager(Activity activity, Account account) {
+	private ProgressDialog progressDialog;
+
+	public GoogleSyncManager(MainActivity activity, Account account) {
 		this.activity = activity;
 		this.account = account;
+		this.observable = new MyObservable();
+		this.observable.addObserver(activity);
 	}
 
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
-		// TODO --> geht noch nicht, er ruft die Methoden aber auf.
-		Log.d(LOG_TAG, "onPreExecute -> opening loading dialog");
-		loadingDialog = ProgressDialog.show(activity, "Synchronisation", "Please wait", true, false);
-//		loadingDialog = new ProgressDialog(activity);
-//		loadingDialog.setMessage("Please wait...");
-//        loadingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-//        loadingDialog.setCancelable(false);
-//        loadingDialog.show();
+		progressDialog = ProgressDialog.show(activity, "Syncing", "Please wait");
 	}
-	
+
 	@Override
 	protected Void doInBackground(Void... params) {
 		try {
@@ -62,13 +66,12 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 	@Override
 	protected void onPostExecute(Void result) {
 		super.onPostExecute(result);
-		Log.d(LOG_TAG, "onPostExecute -> closing loading dialog");
-		// TODO --> geht noch nicht, er ruft die Methoden aber auf.		Log.d(LOG_TAG, "onPostExecute -> closing loading dialog");
-		if(loadingDialog != null) {
-			loadingDialog.dismiss();
-		}
+		progressDialog.dismiss();
+		observable.setChanged();
+		observable.notifyObservers();
+		observable.deleteObserver(activity);
 	}
-	
+
 	private Task searchRemoteTaskForLocalTask(List<Task> remoteTasks, LocalTask localTask) {
 		for (Task remoteTask : remoteTasks) {
 			if (remoteTask.getId().equals(localTask.getGoogleId())) {

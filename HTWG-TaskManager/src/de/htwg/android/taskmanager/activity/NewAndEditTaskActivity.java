@@ -15,6 +15,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -29,6 +31,7 @@ public class NewAndEditTaskActivity extends Activity {
 	private String taskInternalId;
 	private EditText etTitle;
 	private EditText etNote;
+	private CheckBox dueDateGiven;
 	private DatePicker datePickerDue;
 	private Calendar calendar;
 	private CheckBox checkBoxCompleted;
@@ -113,7 +116,6 @@ public class NewAndEditTaskActivity extends Activity {
 	 * new task!).
 	 */
 	public void loadTaskData() {
-		calendar.setTimeInMillis(task.getDue());
 		etTitle.setText(task.getTitle());
 		etNote.setText(task.getNotes());
 		switch (task.getStatus()) {
@@ -124,7 +126,13 @@ public class NewAndEditTaskActivity extends Activity {
 			checkBoxCompleted.setChecked(true);
 			break;
 		}
-		datePickerDue.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+		if(task.getDue() == 0) {
+			dueDateGiven.setChecked(false);
+		} else {
+			calendar.setTimeInMillis(task.getDue());
+			dueDateGiven.setChecked(true);
+			datePickerDue.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+		}
 	}
 
 	/**
@@ -145,6 +153,7 @@ public class NewAndEditTaskActivity extends Activity {
 
 		etTitle = (EditText) findViewById(R.id.title);
 		etNote = (EditText) findViewById(R.id.notes);
+		dueDateGiven = (CheckBox) findViewById(R.id.dueDateGivenCb);
 		datePickerDue = (DatePicker) findViewById(R.id.date);
 		checkBoxCompleted = (CheckBox) findViewById(R.id.completed);
 
@@ -169,6 +178,18 @@ public class NewAndEditTaskActivity extends Activity {
 			dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 			spinnerTasklist.setAdapter(dataAdapter);
 		}
+		
+		dueDateGiven.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				if(isChecked) {
+					datePickerDue.setVisibility(View.VISIBLE);
+				} else {
+					calendar.setTimeInMillis(0);
+					datePickerDue.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+					datePickerDue.setVisibility(View.INVISIBLE);
+				}
+			}
+		});
 	}
 
 	/**
@@ -200,7 +221,7 @@ public class NewAndEditTaskActivity extends Activity {
 	 * @param title
 	 *            the title of the task (validated for not null and not "")
 	 * @param note
-	 *            the notes for this task (validated for not null and not "")
+	 *            the notes for this task (not validated)
 	 * @param dueDateTimestamp
 	 *            (validated for later then today)
 	 * @return true if the input data is valid, otherwise false
@@ -214,10 +235,10 @@ public class NewAndEditTaskActivity extends Activity {
 			Toast.makeText(this, "The due date is before today. Please provide a valid due date.", Toast.LENGTH_LONG).show();
 			return false;
 		}
-		if (note == null || note.trim().equals("")) {
-			Toast.makeText(this, "No notes provided. Please input some notes.", Toast.LENGTH_LONG).show();
-			return false;
-		}
+//		if (note == null || note.trim().equals("")) {
+//			Toast.makeText(this, "No notes provided. Please input some notes.", Toast.LENGTH_LONG).show();
+//			return false;
+//		}
 		return true;
 	}
 }

@@ -13,11 +13,10 @@ import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.LOG
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQUEST_CODE_NEW_ACTIVITY;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQUEST_CODE_SHOW_ACTIVITY;
 
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -45,7 +44,7 @@ import de.htwg.android.taskmanager.backend.entity.LocalTask;
 import de.htwg.android.taskmanager.backend.entity.LocalTaskList;
 import de.htwg.android.taskmanager.google.task.api.GoogleSyncManager;
 
-public class MainActivity extends ExpandableListActivity {
+public class MainActivity extends ExpandableListActivity implements Observer {
 
 	private DatabaseHandler dbHandler;
 	private TaskListAdapter listAdapter;
@@ -315,7 +314,6 @@ public class MainActivity extends ExpandableListActivity {
 			return true;
 		case R.id.sync:
 			startSync();
-			reloadTaskList();
 			break;
 		}
 		return super.onOptionsItemSelected(item);
@@ -404,16 +402,14 @@ public class MainActivity extends ExpandableListActivity {
 			Log.d(LOG_TAG, "Selected Google account = " + accounts[0].name);
 			GoogleSyncManager googleSyncManager = new GoogleSyncManager(this, accounts[0]);
 			googleSyncManager.execute();
-			try {
-				googleSyncManager.get(60, TimeUnit.SECONDS);
-			} catch (InterruptedException e) {
-				Log.d(LOG_TAG, "InterruptedException catched while waiting for Sync response.");
-			} catch (ExecutionException e) {
-				Log.d(LOG_TAG, "ExecutionException catched while waiting for Sync response.");
-			} catch (TimeoutException e) {
-				Log.d(LOG_TAG, "TimeoutException catched while waiting for Sync response.");
-			}
 		}
+	}
+
+	/**
+	 * As soon as the Sync is been finished, the tasklist will be reloaded.
+	 */
+	public void update(Observable observable, Object data) {
+		reloadTaskList();
 	}
 
 }
