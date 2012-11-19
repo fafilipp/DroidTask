@@ -33,7 +33,7 @@ public class TaskActivity extends Activity {
 	 */
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == REQUEST_CODE_EDIT_ACTIVITY) {
+		if (data != null && requestCode == REQUEST_CODE_EDIT_ACTIVITY) {
 			data.putExtra(ACTIVITY_KEY_EDIT, true);
 			setResult(Activity.RESULT_OK, data);
 			finish();
