@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Duty Care</string>
+    <string name="app_name">TaskDroid</string>
     <string name="preferences">Preferences</string>
     <string name="add_type">Type</string>
     <string name="title">Title</string>
