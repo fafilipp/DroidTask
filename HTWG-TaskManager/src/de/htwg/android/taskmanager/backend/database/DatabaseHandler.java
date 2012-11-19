@@ -39,10 +39,25 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 	private static final String[] KEYS_TASKS_TABLE = new String[] { KEY_INTERNAL_ID, KEY_GOOGLE_ID, KEY_LAST_MODIFICATION, KEY_TITLE,
 			KEY_TASK_NOTES, KEY_TASK_STATUS, KEY_TASK_DUE, KEY_TASK_COMPLETED, KEY_TASK_TASKLIST_ID };
 
+	/**
+	 * Creates a new Database Handler (calls just super method with defined
+	 * constants).
+	 * 
+	 * @param context
+	 *            the context activity
+	 */
 	public DatabaseHandler(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}
 
+	/**
+	 * Adds a task to the database in a given tasklist
+	 * 
+	 * @param taskList
+	 *            the tasklist where the task should be saved
+	 * @param task
+	 *            the task to add
+	 */
 	public void addTask(LocalTaskList taskList, LocalTask task) {
 		SQLiteDatabase db = this.getWritableDatabase();
 		ContentValues values = createContentValues(taskList, task);
@@ -51,6 +66,12 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		db.close();
 	}
 
+	/**
+	 * Adds a tasklist the database
+	 * 
+	 * @param taskList
+	 *            the tasklist to add
+	 */
 	public void addTaskList(LocalTaskList taskList) {
 		SQLiteDatabase db = this.getWritableDatabase();
 		ContentValues values = createContentValues(taskList);
@@ -59,6 +80,13 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		db.close();
 	}
 
+	/**
+	 * Creates the ContentValues for the add/edit of tasklists
+	 * 
+	 * @param taskList
+	 *            the tasklists
+	 * @return the contentvalues
+	 */
 	private ContentValues createContentValues(LocalTaskList taskList) {
 		ContentValues values = new ContentValues();
 		values.put(KEY_INTERNAL_ID, taskList.getInternalId());
@@ -68,6 +96,15 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		return values;
 	}
 
+	/**
+	 * Creates the ContentValues for the add/edit of tasks
+	 * 
+	 * @param taskList
+	 *            the tasklist for this task
+	 * @param task
+	 *            the task
+	 * @return the contentvalues
+	 */
 	private ContentValues createContentValues(LocalTaskList taskList, LocalTask task) {
 		ContentValues values = new ContentValues();
 		values.put(KEY_INTERNAL_ID, task.getInternalId());
@@ -84,6 +121,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		return values;
 	}
 
+	/**
+	 * Creates a LocalTaskList object for a database cursor result
+	 * @param cursor the cursor result
+	 * @return a LocalTaskList object
+	 */
 	private LocalTaskList createLocalTaskListObject(Cursor cursor) {
 		LocalTaskList taskList = new LocalTaskList(cursor.getString(cursor.getColumnIndex(KEY_INTERNAL_ID)));
 		taskList.setGoogleId(cursor.getString(cursor.getColumnIndex(KEY_GOOGLE_ID)));
@@ -95,6 +137,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		return taskList;
 	}
 
+	/**
+	 * Creates a LocalTask object for a database cursor result
+	 * @param cursor the cursor result
+	 * @return a LocalTask object
+	 */
 	private LocalTask createLocalTaskObject(Cursor cursor) {
 		LocalTask task = new LocalTask(cursor.getString(cursor.getColumnIndex(KEY_INTERNAL_ID)));
 		task.setGoogleId(cursor.getString(cursor.getColumnIndex(KEY_GOOGLE_ID)));
@@ -107,12 +154,20 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 		return task;
 	}
 
+	/**
+	 * Creates the tasklists table
+	 * @param db the database where the table should be created
+	 */
 	private void createTasklistsTable(SQLiteDatabase db) {
 		String CREATE_TASKLISTS_TABLE = "CREATE TABLE " + TABLE_TASKLISTS + "(" + KEY_INTERNAL_ID + " TEXT PRIMARY KEY," + KEY_GOOGLE_ID
 				+ " TEXT UNIQUE," + KEY_LAST_MODIFICATION + " INTEGER," + KEY_TITLE + " TEXT," + KEY_DELETE_FLAG + " INTEGER)";
 		db.execSQL(CREATE_TASKLISTS_TABLE);
 	}
-
+	
+	/**
+	 * Creates the task table
+	 * @param db the database where the table should be created
+	 */
 	private void createTasksTable(SQLiteDatabase db) {
 		String CREATE_TASKS_TABLE = "CREATE TABLE " + TABLE_TASKS + "(" + KEY_INTERNAL_ID + " TEXT PRIMARY KEY," + KEY_GOOGLE_ID
 				+ " TEXT UNIQUE," + KEY_LAST_MODIFICATION + " INTEGER," + KEY_TITLE + " TEXT," + KEY_TASK_NOTES + " TEXT,"
