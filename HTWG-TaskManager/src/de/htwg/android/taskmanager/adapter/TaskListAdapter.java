@@ -3,6 +3,7 @@ package de.htwg.android.taskmanager.adapter;
 import java.util.List;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,7 @@ import android.widget.TextView;
 import de.htwg.android.taskmanager.activity.R;
 import de.htwg.android.taskmanager.backend.entity.LocalTask;
 import de.htwg.android.taskmanager.backend.entity.LocalTaskList;
+import de.htwg.android.taskmanager.backend.util.EStatus;
 
 public class TaskListAdapter extends BaseExpandableListAdapter {
 
@@ -63,6 +65,13 @@ public class TaskListAdapter extends BaseExpandableListAdapter {
 		view = inflater.inflate(R.layout.child_row, null);
 		TextView tvChildTitle = (TextView) view.findViewById(R.id.grp_child);
 		tvChildTitle.setText(localTask.getTitle());
+		if(localTask.getStatus().equals(EStatus.COMPLETED)) {
+			tvChildTitle.setTextColor(Color.GREEN);
+		} else if(localTask.getStatus().equals(EStatus.NEEDS_ACTION)) {
+			if(localTask.getDue() != 0 && localTask.getDue() < System.currentTimeMillis()) {
+				tvChildTitle.setTextColor(Color.RED);
+			}
+		}
 		return view;
 	}
 

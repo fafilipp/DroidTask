@@ -9,6 +9,7 @@ import android.accounts.Account;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.api.client.util.DateTime;
 import com.google.api.services.tasks.model.Task;
@@ -52,7 +53,8 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 			startSyncTasks(dbHandler, apiManager);
 			Log.i(LOG_TAG, "Sync with Google Tasks ended.");
 		} catch (GoogleSyncException googleSyncException) {
-			// TODO: handle exception
+			Log.e(LOG_TAG, googleSyncException.getMessage(), googleSyncException.getInnerException());
+			Toast.makeText(activity, "No internet connection. Please retry", Toast.LENGTH_LONG).show();
 		}
 		return null;
 	}

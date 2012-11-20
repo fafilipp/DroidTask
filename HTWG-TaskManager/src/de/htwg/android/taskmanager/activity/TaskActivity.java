@@ -53,7 +53,6 @@ public class TaskActivity extends Activity {
 		TextView tvNote = (TextView) findViewById(R.id.notes);
 		TextView tvDueOrCompletedTitle = (TextView) findViewById(R.id.dueOrCompletedTitle);
 		TextView tvDueOrCompleted = (TextView) findViewById(R.id.dueOrCompleted);
-		// CheckBox tvStatus = (CheckBox) findViewById(R.id.status);
 
 		taskInternalId = getIntent().getExtras().getString(ACTIVITY_KEY_TASK_ID);
 
@@ -63,12 +62,14 @@ public class TaskActivity extends Activity {
 		tvNote.setText(task.getNotes());
 
 		if (task.getStatus().equals(EStatus.COMPLETED)) {
-			// tvStatus.setChecked(true);
 			tvDueOrCompletedTitle.setText("Completion Date");
 			tvDueOrCompleted.setText(usingDateFormatter(task.getCompleted()));
 		} else {
-			// tvStatus.setChecked(false);
-			tvDueOrCompleted.setText(usingDateFormatter(task.getDue()));
+			if(task.getDue() == 0) {
+				tvDueOrCompleted.setText("n/a");
+			} else {
+				tvDueOrCompleted.setText(usingDateFormatter(task.getDue()));
+			}
 		}
 	}
 
