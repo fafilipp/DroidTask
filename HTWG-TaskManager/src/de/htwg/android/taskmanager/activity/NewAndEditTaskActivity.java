@@ -27,18 +27,75 @@ import de.htwg.android.taskmanager.backend.entity.LocalTask;
 import de.htwg.android.taskmanager.backend.entity.LocalTaskList;
 import de.htwg.android.taskmanager.backend.util.EStatus;
 
+/**
+ * The NewAndEditTaskActivity for this app. This activity is been used for both,
+ * create a task or edit a task. It comes up with editable text views for the
+ * title, the due date and notes. And check boxes to complete the task and allow
+ * a due date. Additionally on new task the task list where the task should be
+ * saved should be selected on the top.
+ * 
+ * It has just one menu action item for save the created task. Before saving the
+ * task the data will be validated.
+ * 
+ * @author Filippelli, Gerhart, Gillet
+ * 
+ */
 public class NewAndEditTaskActivity extends Activity {
 
+	/**
+	 * The internal if of the task which will be created or edited in this
+	 * activity.
+	 */
 	private String taskInternalId;
+
+	/**
+	 * The EditText object for the title.
+	 */
 	private EditText etTitle;
+
+	/**
+	 * The EditText object for the notes.
+	 */
 	private EditText etNote;
+
+	/**
+	 * A check box which allows the user on checked to enter a due date.
+	 */
 	private CheckBox dueDateGiven;
+
+	/**
+	 * The date picker to select the due date.
+	 */
 	private DatePicker datePickerDue;
+
+	/**
+	 * The calendar object for the date picker
+	 */
 	private Calendar calendar;
+
+	/**
+	 * The check box which selects if a task is completed.
+	 */
 	private CheckBox checkBoxCompleted;
+	
+	/**
+	 * The spinner (on a new task) to select the task list. 
+	 */
 	private Spinner spinnerTasklist;
+	
+	/**
+	 * The local task object which will be edited or created here.
+	 */
 	private LocalTask task;
+	
+	/**
+	 * Marker to differentiate between the edit or create action of this activity.
+	 */
 	private boolean edit;
+	
+	/**
+	 * The database handler for this activity.
+	 */
 	private DatabaseHandler dbHandler;
 	private List<LocalTaskList> listTaskList;
 

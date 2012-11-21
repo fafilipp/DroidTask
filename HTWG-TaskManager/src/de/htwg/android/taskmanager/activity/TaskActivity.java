@@ -22,10 +22,31 @@ import de.htwg.android.taskmanager.backend.database.DatabaseHandler;
 import de.htwg.android.taskmanager.backend.entity.LocalTask;
 import de.htwg.android.taskmanager.backend.util.EStatus;
 
+/**
+ * The TaskActivity for this app. This activity shows up the task information as
+ * title, notes, completion date on completed task and due date (if given) on
+ * not completed tasks. Additionally it allows to edit (call
+ * NewAndEditTaskActivity) and delete this task (confirmation dialog and then
+ * back to the MainActivity).
+ * 
+ * @author Filippelli, Gerhart, Gillet
+ * 
+ */
 public class TaskActivity extends Activity {
 
+	/**
+	 * The internal id for the showed task.
+	 */
 	private String taskInternalId;
+
+	/**
+	 * The database handler for this activity.
+	 */
 	private DatabaseHandler dbHandler;
+
+	/**
+	 * The local task object for the showed task
+	 */
 	private LocalTask task;
 
 	/**
@@ -65,7 +86,7 @@ public class TaskActivity extends Activity {
 			tvDueOrCompletedTitle.setText("Completion Date");
 			tvDueOrCompleted.setText(usingDateFormatter(task.getCompleted()));
 		} else {
-			if(task.getDue() == 0) {
+			if (task.getDue() == 0) {
 				tvDueOrCompleted.setText("n/a");
 			} else {
 				tvDueOrCompleted.setText(usingDateFormatter(task.getDue()));
@@ -101,26 +122,34 @@ public class TaskActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 
+	/**
+	 * On delete shows up a delete dialog to confirm the deletion, on
+	 * confirmation the task will be deleted and the expandable and this
+	 * activity finished (go back to the MainActivity).
+	 * 
+	 * @param internalId
+	 *            the internal id of the task
+	 * @param title
+	 *            the title id of the task
+	 */
 	private void showDeleteDialog(final String internalId, final String title) {
-        new AlertDialog.Builder(this).setTitle("Delete " + title).setIcon(drawable.ic_delete)
-        .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-            	dbHandler.deleteTask(internalId);
-    			Intent resultIntent = new Intent();
-    			resultIntent.putExtra(ACTIVITY_KEY_EDIT, false);
-    			resultIntent.putExtra(ACTIVITY_KEY_TASK_TITLE, title);
-    			setResult(Activity.RESULT_OK, resultIntent);
-    			finish();
-            }
-        })
-        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                dialog.cancel();
-            }
-        })
-        .show();
-    }
-	
+		new AlertDialog.Builder(this).setTitle("Delete " + title).setIcon(drawable.ic_delete)
+				.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						dbHandler.deleteTask(internalId);
+						Intent resultIntent = new Intent();
+						resultIntent.putExtra(ACTIVITY_KEY_EDIT, false);
+						resultIntent.putExtra(ACTIVITY_KEY_TASK_TITLE, title);
+						setResult(Activity.RESULT_OK, resultIntent);
+						finish();
+					}
+				}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						dialog.cancel();
+					}
+				}).show();
+	}
+
 	/**
 	 * Formats a given long - milli seconds date - into a string of the format
 	 * "yyyy/MMM/dd hh:mm:ss z"

@@ -44,20 +44,40 @@ import de.htwg.android.taskmanager.adapter.TaskListAdapter;
 import de.htwg.android.taskmanager.backend.database.DatabaseHandler;
 import de.htwg.android.taskmanager.backend.entity.LocalTask;
 import de.htwg.android.taskmanager.backend.entity.LocalTaskList;
+import de.htwg.android.taskmanager.backend.util.EType;
 import de.htwg.android.taskmanager.google.task.api.GoogleSyncManager;
 
+/**
+ * The MainActivity for this app. This activity comes up showing all task lists
+ * and tasks in an expandable list view. Additionally it will allow the user to
+ * perform some actions. Use action items (synchronization with Google Tasks and
+ * add new item [task or task list]), show task information (short click on
+ * task) and edit task/task lists (long click on task or task list).
+ * 
+ * @author Filippelli, Gerhart, Gillet
+ * 
+ */
 public class MainActivity extends ExpandableListActivity implements Observer {
 
+	/**
+	 * The database handler object for this activity.
+	 */
 	private DatabaseHandler dbHandler;
-	private TaskListAdapter listAdapter;
-	private Set<String> expandedTaskLists = new TreeSet<String>();
-
-	private int TYPE_TASKLIST = 101;
-	private int TYPE_TASK = 102;
 
 	/**
-	 * A new task list will be created and added to the database, using the
-	 * database handler.
+	 * The list adapter for the expandable list view.
+	 */
+	private TaskListAdapter listAdapter;
+
+	/**
+	 * Stores the expanded tasklists, which will be expanded again after a list
+	 * refresh.
+	 */
+	private Set<String> expandedTaskLists = new TreeSet<String>();
+
+	/**
+	 * A new task list will be created and finally add to the database (using
+	 * the database handler object).
 	 * 
 	 * @param title
 	 *            the title for this tasklist
@@ -70,28 +90,32 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 	}
 
 	/**
-	 * While clicking the add button on the main activity an dialog for creating
-	 * an object will be opened using this method. Therefore the user will be
-	 * asked by an RadioButton if he wants to create a task list or a task. He
-	 * is also able to enter a title for the created object. If he creates a
-	 * task the NewAndEditTaskActivity will be started, otherwise on the task
-	 * list, the title will be set and saved into the database.
+	 * While clicking the add action item on the main activity an dialog for
+	 * creating an object will be opened using this method. Therefore the user
+	 * will be asked by an RadioButton if he wants to create a task list or a
+	 * task. He should also enter a title for the created object. If he choose
+	 * to create a task the NewAndEditTaskActivity will be started. Otherwise
+	 * (task list) the title will be set and saved into the database directly in
+	 * this activity.
 	 */
 	private void createAddDialog(int rbcheck) {
 		AlertDialog.Builder addDialog = new AlertDialog.Builder(this);
 		LayoutInflater layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View view = layoutInflater.inflate(R.layout.add_dialog, null);
-
 		final EditText etTitle = (EditText) view.findViewById(R.id.title);
 		final RadioGroup rgType = (RadioGroup) view.findViewById(R.id.rg_new_type);
 
 		// set task as default clicked radio button
 		rgType.check(rbcheck);
+
+		// create a cancel button
 		addDialog.setNegativeButton(ACTIVITY_DIALOG_CANCEL, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
 				dialog.dismiss();
 			}
 		});
+
+		// create the add button
 		addDialog.setPositiveButton(ACTIVITY_DIALOG_ADD, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
 				String newTitle = etTitle.getText().toString();
@@ -108,9 +132,13 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 				}
 			}
 		});
+
+		// set some necessary properties for this dialog
 		addDialog.setCancelable(true);
 		addDialog.create();
 		addDialog.setView(view);
+
+		// shows the dialog
 		addDialog.show();
 	}
 
@@ -129,13 +157,18 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 		View view = layoutInflater.inflate(R.layout.edit_dialog, null);
 
 		final EditText etTitle = (EditText) view.findViewById(R.id.et_title);
+
+		// set the old title of the task list as default value
 		etTitle.setText(taskList.getTitle());
-		
+
+		// create a cancel button
 		editDialog.setNegativeButton(ACTIVITY_DIALOG_CANCEL, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
 				dialog.dismiss();
 			}
 		});
+
+		// create the add button
 		editDialog.setPositiveButton(ACTIVITY_DIALOG_EDIT, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
 				String newTitle = etTitle.getText().toString();
@@ -152,36 +185,53 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 				}
 			}
 		});
+
+		// set some necessary properties for this dialog
 		editDialog.setCancelable(true);
 		editDialog.create();
 		editDialog.setView(view);
+
+		// shows the dialog
 		editDialog.show();
 	}
 
 	/**
-	 * Deletes a task from the database and reloads the task list.
+	 * Shows up the delete dialog to delete this task. Here the user is able to
+	 * confirm the deletion. Afterwards the task will be deleted from the
+	 * database and reloads the task list afterwards. Finally the expanded list
+	 * view (containing the task lists and tasks) will be reloaded.
 	 * 
 	 * @param taskId
-	 *            the id of this task.
+	 *            the internal id of this task.
+	 * @param title
+	 *            the title of the task, which will be showed in the delete
+	 *            dialog
 	 */
 	private void deleteTask(String taskId, String title) {
-		showDeleteDialog(TYPE_TASK, taskId, title);
+		showDeleteDialog(EType.TASK, taskId, title);
 	}
 
 	/**
-	 * Deletes a task list from the database and reloads the task list.
+	 * Shows up the delete dialog to delete this task list. Here the user is
+	 * able to confirm the deletion. Afterwards the task list and all tasks for
+	 * this task list will be deleted from the database. Finally the expanded
+	 * list view (containing the task lists and tasks) will be reloaded.
 	 * 
 	 * @param taskListId
 	 *            the id of this task list.
 	 * @param title
+	 *            the title of the task list, which will be showed in the delete
+	 *            dialog
 	 */
 	private void deleteTaskList(String taskListId, String title) {
-		showDeleteDialog(TYPE_TASKLIST, taskListId, title);
+		showDeleteDialog(EType.TASKLIST, taskListId, title);
 	}
 
 	/**
-	 * On the result of an called activity this method will be called.
-	 * Afterwards the tasklist will be reloaded into the list adapter.
+	 * After a called activity finishes, this method will be called. This method
+	 * performs a reload of the expanded list view. Before doing this it will
+	 * show up a notification for the user, to confirm that the called operation
+	 * is been performed.
 	 */
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -201,8 +251,8 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 					Toast.makeText(this, String.format("Task '%s' deleted.", title), Toast.LENGTH_LONG).show();
 				}
 			}
-			Log.i(LOG_TAG, "Task showed");
 		}
+		// Reloads the task list
 		reloadTaskList();
 		super.onActivityResult(requestCode, resultCode, data);
 	}
@@ -220,7 +270,7 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 
 	/**
 	 * Default onContextItemSelected of this activity. It reacts to the clicked
-	 * event.
+	 * on long click event (of the on long click dialog).
 	 */
 	public boolean onContextItemSelected(MenuItem menuItem) {
 		String clicked = menuItem.getTitle().toString();
@@ -389,23 +439,24 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 	 * @param title
 	 *            the title id of the task or tasklist
 	 */
-	private void showDeleteDialog(final int type, final String internalId, final String title) {
-		new AlertDialog.Builder(this).setTitle("Delete " + title).setIcon(drawable.ic_delete).setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int whichButton) {
-				if (type == TYPE_TASKLIST) {
-					dbHandler.deleteTaskList(internalId);
-					Toast.makeText(MainActivity.this, String.format("Tasklist '%s' deleted.", title), Toast.LENGTH_LONG).show();
-				} else if (type == TYPE_TASK) {
-					dbHandler.deleteTask(internalId);
-					Toast.makeText(MainActivity.this, String.format("Task '%s' deleted.", title), Toast.LENGTH_LONG).show();
-				}
-				reloadTaskList();
-			}
-		}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int whichButton) {
-				dialog.cancel();
-			}
-		}).show();
+	private void showDeleteDialog(final EType type, final String internalId, final String title) {
+		new AlertDialog.Builder(this).setTitle("Delete " + title).setIcon(drawable.ic_delete)
+				.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						if (type.equals(EType.TASKLIST)) {
+							dbHandler.deleteTaskList(internalId);
+							Toast.makeText(MainActivity.this, String.format("Tasklist '%s' deleted.", title), Toast.LENGTH_LONG).show();
+						} else if (type.equals(EType.TASK)) {
+							dbHandler.deleteTask(internalId);
+							Toast.makeText(MainActivity.this, String.format("Task '%s' deleted.", title), Toast.LENGTH_LONG).show();
+						}
+						reloadTaskList();
+					}
+				}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						dialog.cancel();
+					}
+				}).show();
 	}
 
 	/**
