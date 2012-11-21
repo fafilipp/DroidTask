@@ -29,6 +29,12 @@ import de.htwg.android.taskmanager.backend.entity.LocalTask;
 import de.htwg.android.taskmanager.backend.entity.LocalTaskList;
 import de.htwg.android.taskmanager.backend.util.EStatus;
 
+/**
+ * This class manages the connection to the SQLite database..
+ * 
+ * @author Filippelli, Gerhart, Gillet
+ * 
+ */
 public class DatabaseHandler extends SQLiteOpenHelper {
 
 	/**

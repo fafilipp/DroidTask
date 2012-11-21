@@ -1,14 +1,36 @@
 package de.htwg.android.taskmanager.backend.util;
 
+/**
+ * This enum represents the Status of Tasks.
+ * 
+ * @author Filippelli, Gerhart, Gillet
+ * 
+ */
 public enum EStatus {
-	NEEDS_ACTION, COMPLETED;
-	 
-	private final static String NEEDS_ACTION_STRING = "needsAction";
-	private final static String COMPLETED_STRING = "completed";
-	
+
 	/**
-	 * Transforms a EStatus String representation (in String representation) into a EStatus
-	 * Object
+	 * Needs Action is defined, for uncompleted tasks.
+	 */
+	NEEDS_ACTION,
+	/**
+	 * Completed is defined, for completed tasks.
+	 */
+	COMPLETED;
+
+	/**
+	 * The Google Tasks API NEEDS_ACTION literal (defined as String
+	 * "needsAction").
+	 */
+	private final static String NEEDS_ACTION_STRING = "needsAction";
+
+	/**
+	 * The Google Tasks API COMPLETED literal (defined as String "completed").
+	 */
+	private final static String COMPLETED_STRING = "completed";
+
+	/**
+	 * Transforms a EStatus String representation (in String representation)
+	 * into a EStatus Object
 	 * 
 	 * @param status
 	 *            the google status (as String)
@@ -18,7 +40,7 @@ public enum EStatus {
 		if (status == null) {
 			return null;
 		}
-		if(status.equals(EStatus.NEEDS_ACTION)) {
+		if (status.equals(EStatus.NEEDS_ACTION)) {
 			return NEEDS_ACTION_STRING;
 		} else if (status.equals(EStatus.COMPLETED)) {
 			return COMPLETED_STRING;
@@ -26,7 +48,7 @@ public enum EStatus {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Transforms a Google Status (in String representation) into a EStatus
 	 * Object

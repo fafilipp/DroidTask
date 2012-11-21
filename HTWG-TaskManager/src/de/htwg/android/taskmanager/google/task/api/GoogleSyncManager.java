@@ -21,21 +21,65 @@ import de.htwg.android.taskmanager.backend.entity.LocalTaskList;
 import de.htwg.android.taskmanager.backend.util.EStatus;
 import de.htwg.android.taskmanager.google.task.api.util.GoogleSyncException;
 
+/**
+ * This class is a AsyncTask and performes the Google Sync on a different
+ * Thread.
+ * 
+ * @author Filippelli, Gerhart, Gillet
+ * 
+ */
 public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 
+	/**
+	 * The Observable inner class implementation, necessary to notify the
+	 * Activity as soon as the sync is been finished.
+	 * 
+	 * @author Filippelli, Gerhart, Gillet
+	 * 
+	 */
 	public class MyObservable extends Observable {
 		public void setChanged() {
 			super.setChanged();
 		}
 	}
 
+	/**
+	 * The MyObservable instance object, to registry the Activity.
+	 */
 	private MyObservable observable;
 
+	/**
+	 * This flag will be changed to false, if something goes wrong while
+	 * syncing.
+	 */
 	private Boolean success = true;
+
+	/**
+	 * The MainActivity instance to registry the observer and call the Google
+	 * Tasks Api.
+	 */
 	private MainActivity activity;
+
+	/**
+	 * The Google Account instance to authentificate to the Google server.
+	 */
 	private Account account;
+
+	/**
+	 * This ProgressDialog will be showed up as long as the sync will be
+	 * performed.
+	 */
 	private ProgressDialog progressDialog;
 
+	/**
+	 * Creates a new GoogleSyncManager for a given Activity and a given Account.
+	 * It creates the observable object and adds the activity observer to it.
+	 * 
+	 * @param activity
+	 *            the activity instance.
+	 * @param account
+	 *            the account instance.
+	 */
 	public GoogleSyncManager(MainActivity activity, Account account) {
 		this.activity = activity;
 		this.account = account;
@@ -43,6 +87,10 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 		this.observable.addObserver(activity);
 	}
 
+	/**
+	 * Performs the Sync in a new Thread. Syncs first the task lists and then
+	 * the tasks.
+	 */
 	@Override
 	protected Void doInBackground(Void... params) {
 		try {
@@ -59,6 +107,9 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 		return null;
 	}
 
+	/**
+	 * Closes the ProgressDialog after execution.
+	 */
 	@Override
 	protected void onPostExecute(Void result) {
 		super.onPostExecute(result);
@@ -68,12 +119,24 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 		observable.deleteObserver(activity);
 	}
 
+	/**
+	 * Opens a ProgressDialog before execution.
+	 */
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
 		progressDialog = ProgressDialog.show(activity, "Syncing", "Please wait");
 	}
 
+	/**
+	 * Search the remote object for a local task object.
+	 * 
+	 * @param remoteTasks
+	 *            the remote list of tasks.
+	 * @param localTask
+	 *            the local task object.
+	 * @return the remote task object if found, null otherwise.
+	 */
 	private Task searchRemoteTaskForLocalTask(List<Task> remoteTasks, LocalTask localTask) {
 		for (Task remoteTask : remoteTasks) {
 			if (remoteTask.getId().equals(localTask.getGoogleId())) {
@@ -83,6 +146,15 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 		return null;
 	}
 
+	/**
+	 * Search the remote object for a local task list object.
+	 * 
+	 * @param remoteTaskLists
+	 *            the remote list of task lists.
+	 * @param localTaskList
+	 *            the local task list object.
+	 * @return the remote task object if found, null otherwise.
+	 */
 	private TaskList searchRemoteTaskListForLocalTaskList(List<TaskList> remoteTaskLists, LocalTaskList localTaskList) {
 		for (TaskList remoteTaskList : remoteTaskLists) {
 			if (remoteTaskList.getId().equals(localTaskList.getGoogleId())) {
@@ -92,6 +164,16 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 		return null;
 	}
 
+	/**
+	 * Performs a sync from the databse to the Google Tasks Api for task lists.
+	 * 
+	 * @param dbHandler
+	 *            the database handler to access the local tasks and task lists.
+	 * @param apiManager
+	 *            the api manager to access the remote tasks and task lists.
+	 * @throws GoogleSyncException
+	 *             if something goes wrong while syncing.
+	 */
 	private void startSyncTaskLists(DatabaseHandler dbHandler, GoogleTaskApiManager apiManager) throws GoogleSyncException {
 		List<TaskList> remoteTaskLists = apiManager.getTaskLists();
 		List<LocalTaskList> deletedLocalTaskLists = dbHandler.getDeletedTaskLists();
@@ -153,6 +235,16 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 		// this point.
 	}
 
+	/**
+	 * Performs a sync from the database to the Google Tasks Api for tasks.
+	 * 
+	 * @param dbHandler
+	 *            the database handler to access the local tasks and task lists.
+	 * @param apiManager
+	 *            the api manager to access the remote tasks and task lists.
+	 * @throws GoogleSyncException
+	 *             if something goes wrong while syncing.
+	 */
 	private void startSyncTasks(DatabaseHandler dbHandler, GoogleTaskApiManager apiManager) throws GoogleSyncException {
 		List<LocalTaskList> localTaskLists = dbHandler.getTaskLists();
 		List<LocalTask> deletedLocalTasks = dbHandler.getDeletedTask();

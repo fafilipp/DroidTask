@@ -1,5 +1,11 @@
 package de.htwg.android.taskmanager.backend.database;
 
+/**
+ * This interface defines the constants used by the DatabaseHandler class.
+ * 
+ * @author Filippelli, Gerhart, Gillet
+ * 
+ */
 public interface DatabaseConstants {
 
 	// Database Version and Name
@@ -24,7 +30,7 @@ public interface DatabaseConstants {
 
 	// Arrays of all columns
 	String[] KEYS_TASKLISTS_TABLE = new String[] { KEY_INTERNAL_ID, KEY_GOOGLE_ID, KEY_LAST_MODIFICATION, KEY_TITLE };
-	String[] KEYS_TASKS_TABLE = new String[] { KEY_INTERNAL_ID, KEY_GOOGLE_ID, KEY_LAST_MODIFICATION, KEY_TITLE,
-			KEY_TASK_NOTES, KEY_TASK_STATUS, KEY_TASK_DUE, KEY_TASK_COMPLETED, KEY_TASK_TASKLIST_ID };
-	
+	String[] KEYS_TASKS_TABLE = new String[] { KEY_INTERNAL_ID, KEY_GOOGLE_ID, KEY_LAST_MODIFICATION, KEY_TITLE, KEY_TASK_NOTES,
+			KEY_TASK_STATUS, KEY_TASK_DUE, KEY_TASK_COMPLETED, KEY_TASK_TASKLIST_ID };
+
 }
