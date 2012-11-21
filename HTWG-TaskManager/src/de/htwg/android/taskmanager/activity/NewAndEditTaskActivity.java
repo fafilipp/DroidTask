@@ -97,6 +97,10 @@ public class NewAndEditTaskActivity extends Activity {
 	 * The database handler for this activity.
 	 */
 	private DatabaseHandler dbHandler;
+	
+	/**
+	 * The list of LocalTaskList gained from the database.
+	 */
 	private List<LocalTaskList> listTaskList;
 
 	/**
@@ -107,7 +111,10 @@ public class NewAndEditTaskActivity extends Activity {
 		// Get Attributes from View-Objects
 		String title = etTitle.getText().toString();
 		String note = etNote.getText().toString();
-		boolean completed = checkBoxCompleted.isChecked();
+		boolean completed = false;
+		if(checkBoxCompleted != null) {
+			completed = checkBoxCompleted.isChecked();
+		}
 		long dueDateTimestamp = getDueDateTimestamp();
 
 		// Check if input data is valid
@@ -260,6 +267,14 @@ public class NewAndEditTaskActivity extends Activity {
 				}
 			}
 		});
+		
+//		if(checkBoxCompleted != null) {
+//			checkBoxCompleted.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+//				public void onCheckedChanged(CompoundButton arg0, boolean arg1) {
+//					
+//				}
+//			});
+//		}
 	}
 
 	/**

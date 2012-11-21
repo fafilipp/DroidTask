@@ -14,18 +14,35 @@ import de.htwg.android.taskmanager.backend.entity.LocalTask;
 import de.htwg.android.taskmanager.backend.entity.LocalTaskList;
 import de.htwg.android.taskmanager.backend.util.EStatus;
 
+/**
+ * The task list adapter for the expandable list view. It fills the expandable
+ * list views with information about task lists and tasks. The groups are
+ * expandable and show the title of every task list. If the task list is
+ * expanded the tasks in this task list will be showed as childs.
+ * 
+ * @author Filippelli, Gerhart, Gillet
+ * 
+ */
 public class TaskListAdapter extends BaseExpandableListAdapter {
 
+	/**
+	 * The context (the activity) where this adapter is been used.
+	 */
 	private Context context;
+
+	/**
+	 * The list of local task lists which will be get from the database. Each
+	 * task list contains a list of tasks.
+	 */
 	private List<LocalTaskList> tasklists;
 
 	/**
-	 * Creates a TaskListAdapter
+	 * Creates a TaskListAdapter object
 	 * 
 	 * @param context
 	 *            the context for this list adapter
 	 * @param tasklists
-	 *            the input data --> list of LocalTaskList
+	 *            the data --> list of LocalTaskList
 	 */
 	public TaskListAdapter(Context context, List<LocalTaskList> tasklists) {
 		this.context = context;
@@ -33,15 +50,14 @@ public class TaskListAdapter extends BaseExpandableListAdapter {
 	}
 
 	/**
-	 * Gets a child (LocalTask) for an given group and childposition.
+	 * Gets a child (LocalTask) for an given group and child position.
 	 */
 	public Object getChild(int groupPosition, int childPosition) {
 		return tasklists.get(groupPosition).getTaskList().get(childPosition);
 	}
 
 	/**
-	 * Returns the child position of the given group and child position
-	 * (LocalTask).
+	 * Returns the child internal id as int hashcode.
 	 */
 	public long getChildId(int groupPosition, int childPosition) {
 		return tasklists.get(groupPosition).getTaskList().get(childPosition).getInternalId().hashCode();
@@ -65,10 +81,10 @@ public class TaskListAdapter extends BaseExpandableListAdapter {
 		view = inflater.inflate(R.layout.child_row, null);
 		TextView tvChildTitle = (TextView) view.findViewById(R.id.grp_child);
 		tvChildTitle.setText(localTask.getTitle());
-		if(localTask.getStatus().equals(EStatus.COMPLETED)) {
+		if (localTask.getStatus().equals(EStatus.COMPLETED)) {
 			tvChildTitle.setTextColor(Color.GREEN);
-		} else if(localTask.getStatus().equals(EStatus.NEEDS_ACTION)) {
-			if(localTask.getDue() != 0 && localTask.getDue() < System.currentTimeMillis()) {
+		} else if (localTask.getStatus().equals(EStatus.NEEDS_ACTION)) {
+			if (localTask.getDue() != 0 && localTask.getDue() < System.currentTimeMillis()) {
 				tvChildTitle.setTextColor(Color.RED);
 			}
 		}
@@ -90,7 +106,7 @@ public class TaskListAdapter extends BaseExpandableListAdapter {
 	}
 
 	/**
-	 * Returns the group position for a given group position.
+	 * Returns the group internal id as int hashcode.
 	 */
 	public long getGroupId(int groupPosition) {
 		return tasklists.get(groupPosition).getInternalId().hashCode();

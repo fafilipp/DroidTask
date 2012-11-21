@@ -9,7 +9,6 @@ import android.accounts.Account;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.api.client.util.DateTime;
 import com.google.api.services.tasks.model.Task;
@@ -32,6 +31,7 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 
 	private MyObservable observable;
 
+	private Boolean success = true;
 	private MainActivity activity;
 	private Account account;
 	private ProgressDialog progressDialog;
@@ -54,7 +54,7 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 			Log.i(LOG_TAG, "Sync with Google Tasks ended.");
 		} catch (GoogleSyncException googleSyncException) {
 			Log.e(LOG_TAG, googleSyncException.getMessage(), googleSyncException.getInnerException());
-			Toast.makeText(activity, "No internet connection. Please retry", Toast.LENGTH_LONG).show();
+			success = false;
 		}
 		return null;
 	}
@@ -64,7 +64,7 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 		super.onPostExecute(result);
 		progressDialog.dismiss();
 		observable.setChanged();
-		observable.notifyObservers();
+		observable.notifyObservers(success);
 		observable.deleteObserver(activity);
 	}
 

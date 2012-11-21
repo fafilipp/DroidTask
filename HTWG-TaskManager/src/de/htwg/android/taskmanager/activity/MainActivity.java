@@ -235,14 +235,14 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 	 */
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == REQUEST_CODE_NEW_ACTIVITY) {
-			String title = data.getExtras().getString(ACTIVITY_KEY_TASK_TITLE);
-			Toast.makeText(this, String.format("Task '%s' created.", title), Toast.LENGTH_LONG).show();
-		} else if (requestCode == REQUEST_CODE_EDIT_ACTIVITY) {
-			String title = data.getExtras().getString(ACTIVITY_KEY_TASK_TITLE);
-			Toast.makeText(this, String.format("Task '%s' edited.", title), Toast.LENGTH_LONG).show();
-		} else if (requestCode == REQUEST_CODE_SHOW_ACTIVITY) {
-			if (data != null) {
+		if (data != null) {
+			if (requestCode == REQUEST_CODE_NEW_ACTIVITY) {
+				String title = data.getExtras().getString(ACTIVITY_KEY_TASK_TITLE);
+				Toast.makeText(this, String.format("Task '%s' created.", title), Toast.LENGTH_LONG).show();
+			} else if (requestCode == REQUEST_CODE_EDIT_ACTIVITY) {
+				String title = data.getExtras().getString(ACTIVITY_KEY_TASK_TITLE);
+				Toast.makeText(this, String.format("Task '%s' edited.", title), Toast.LENGTH_LONG).show();
+			} else if (requestCode == REQUEST_CODE_SHOW_ACTIVITY) {
 				boolean edit = data.getExtras().getBoolean(ACTIVITY_KEY_EDIT);
 				String title = data.getExtras().getString(ACTIVITY_KEY_TASK_TITLE);
 				if (edit) {
@@ -515,6 +515,12 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 	 * As soon as the Sync is been finished, the tasklist will be reloaded.
 	 */
 	public void update(Observable observable, Object data) {
+		if (data instanceof Boolean) {
+			boolean success = (Boolean) data;
+			if (!success) {
+				Toast.makeText(this, "No internet connection. Please retry", Toast.LENGTH_LONG).show();
+			}
+		}
 		reloadTaskList();
 	}
 

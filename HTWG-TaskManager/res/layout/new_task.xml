@@ -25,9 +25,8 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
-            android:inputType="text"
-        />
-        
+            android:inputType="text" />
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -38,26 +37,14 @@
             android:textColor="@android:color/holo_blue_light"
             android:textSize="20sp" />
 
-        <LinearLayout
+        <EditText
+            android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="15dp"
-            android:orientation="horizontal" >
-
-            <EditText
-                android:id="@+id/title"
-                android:layout_width="0dip"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:layout_weight="1.00"
-                android:inputType="text" />
-
-            <CheckBox
-                android:id="@+id/completed"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_weight="1.00"
+            android:inputType="text" />
 
         <TextView
             android:layout_width="match_parent"
@@ -74,6 +61,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="15dp"
             android:orientation="horizontal" >
+
             <CheckBox
                 android:id="@+id/dueDateGivenCb"
                 android:layout_width="wrap_content"
@@ -81,11 +69,11 @@
 
             <DatePicker
                 android:id="@+id/date"
-                android:layout_weight="1.00"
                 android:layout_width="0dip"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
                 android:layout_marginRight="5dp"
+                android:layout_weight="1.00"
                 android:calendarViewShown="false"
                 android:visibility="invisible" />
         </LinearLayout>
