@@ -118,6 +118,6 @@
 	
 	<modules>
         <module>../HTWG-TaskManager</module>
-        <module>../HTWG-TaskManagerTest</module>
+        <!-- module>../HTWG-TaskManagerTest</module-->
     </modules>
 </project>
