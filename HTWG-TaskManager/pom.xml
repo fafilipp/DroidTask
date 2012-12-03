@@ -6,6 +6,7 @@
 		<groupId>de.htwg.android.taskmanager</groupId>
 		<artifactId>TaskDroid-Parent</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../HTWG-TaskManagerParent/pom.xml</relativePath>
 	</parent>
 	<artifactId>TaskDroid-App</artifactId>
 	<packaging>apk</packaging>
