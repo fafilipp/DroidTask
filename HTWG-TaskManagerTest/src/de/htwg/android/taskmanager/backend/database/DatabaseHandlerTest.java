@@ -36,7 +36,7 @@ public class DatabaseHandlerTest extends AndroidTestCase {
 	public void testGetNonExistingLocalTaskList(){
 		LocalTaskList localTaskList = new LocalTaskList();
 		localTaskList.setTitle("TestTaskList");
-		assertNotNull(db.getTaskListByInternalId(localTaskList.getInternalId()));
+		assertNull(db.getTaskListByInternalId(localTaskList.getInternalId()));
 	}
 	
 	public void testGetNonExistingLocalTask(){
@@ -44,7 +44,7 @@ public class DatabaseHandlerTest extends AndroidTestCase {
 		localTaskList.setTitle("TestTaskList");
 		LocalTask localTask = new LocalTask();
 		localTask.setTitle("TestTask");
-		assertNotNull(db.getTaskByInternalId(localTask.getInternalId()));
+		assertNull(db.getTaskByInternalId(localTask.getInternalId()));
 	}
 	
 	public void testDeleteAllTasksForTaskList(){
@@ -86,7 +86,7 @@ public class DatabaseHandlerTest extends AndroidTestCase {
 		
 		db.deleteAllTasksForTaskList(localTaskList.getInternalId());
 		
-		assertEquals(1, db.getTaskListByInternalId(localTaskList.getInternalId()).getTaskList().size());
+		assertEquals(0, db.getTaskListByInternalId(localTaskList.getInternalId()).getTaskList().size());
 		
 	
 	}
