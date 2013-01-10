@@ -10,7 +10,6 @@ import java.util.concurrent.TimeoutException;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.test.ActivityInstrumentationTestCase2;
-import android.util.Log;
 
 import com.google.api.services.tasks.model.Task;
 import com.google.api.services.tasks.model.TaskList;
@@ -86,15 +85,13 @@ public class GoogleSyncManagerTest extends ActivityInstrumentationTestCase2<Main
 			syncManager.execute();
 			syncManager.get(1000, TimeUnit.DAYS);
 			LocalTaskList localTaskList = dbHandler.getTaskListByGoogleId(taskList.getId());
-			Log.i("Remote", taskList.getTitle());
-			Log.i("Local", localTaskList.getTitle());
 			assertEquals(localTaskList.getTitle(), taskList.getTitle());
 		} catch (GoogleSyncException e) {
 			fail("No remote connection.");
 		}
 	}
 
-	public void test_201_AddTasklistForSync() throws InterruptedException, ExecutionException, TimeoutException {
+	public void test_201_AddTaskForSync() throws InterruptedException, ExecutionException, TimeoutException {
 		try {
 			TaskList taskList = searchTaskList(UPD_TASKLIST_NAME);
 			assertNotNull(taskList);
@@ -120,8 +117,6 @@ public class GoogleSyncManagerTest extends ActivityInstrumentationTestCase2<Main
 			syncManager.execute();
 			syncManager.get(1000, TimeUnit.DAYS);
 			LocalTask localTask = dbHandler.getTaskByGoogleId(task.getId());
-			Log.i("Remote Task", task.getTitle());
-			Log.i("Local Task", localTask.getTitle());
 			assertEquals(localTask.getTitle(), task.getTitle());
 		} catch (GoogleSyncException e) {
 			fail("No remote connection.");
@@ -134,6 +129,8 @@ public class GoogleSyncManagerTest extends ActivityInstrumentationTestCase2<Main
 			assertNotNull(taskList);
 			Task task = searchTask(taskList.getId(), UPD_TASK_NAME);
 			assertNotNull(task);
+			LocalTask localTask = dbHandler.getTaskByGoogleId(task.getId());
+			dbHandler.deleteTaskFinal(localTask.getInternalId());
 			apiManager.deleteTask(taskList.getId(), task.getId());
 		} catch (GoogleSyncException e) {
 			fail("No remote connection.");
@@ -142,9 +139,11 @@ public class GoogleSyncManagerTest extends ActivityInstrumentationTestCase2<Main
 
 	public void test_991_DeleteTaskList() throws InterruptedException, ExecutionException, TimeoutException {
 		try {
-			TaskList lastTaskList = searchTaskList(UPD_TASKLIST_NAME);
-			assertNotNull(lastTaskList);
-			apiManager.deleteTaskList(lastTaskList.getId());
+			TaskList taskList = searchTaskList(UPD_TASKLIST_NAME);
+			assertNotNull(taskList);
+			LocalTaskList localTaskList = dbHandler.getTaskListByGoogleId(taskList.getId());
+			dbHandler.deleteTaskListFinal(localTaskList.getInternalId());
+			apiManager.deleteTaskList(taskList.getId());
 		} catch (GoogleSyncException e) {
 			fail("No remote connection.");
 		}

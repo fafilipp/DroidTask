@@ -77,27 +77,28 @@ public class NewAndEditTaskActivity extends Activity {
 	 * The check box which selects if a task is completed.
 	 */
 	private CheckBox checkBoxCompleted;
-	
+
 	/**
-	 * The spinner (on a new task) to select the task list. 
+	 * The spinner (on a new task) to select the task list.
 	 */
 	private Spinner spinnerTasklist;
-	
+
 	/**
 	 * The local task object which will be edited or created here.
 	 */
 	private LocalTask task;
-	
+
 	/**
-	 * Marker to differentiate between the edit or create action of this activity.
+	 * Marker to differentiate between the edit or create action of this
+	 * activity.
 	 */
 	private boolean edit;
-	
+
 	/**
 	 * The database handler for this activity.
 	 */
 	private DatabaseHandler dbHandler;
-	
+
 	/**
 	 * The list of LocalTaskList gained from the database.
 	 */
@@ -112,7 +113,7 @@ public class NewAndEditTaskActivity extends Activity {
 		String title = etTitle.getText().toString();
 		String note = etNote.getText().toString();
 		boolean completed = false;
-		if(checkBoxCompleted != null) {
+		if (checkBoxCompleted != null) {
 			completed = checkBoxCompleted.isChecked();
 		}
 		long dueDateTimestamp = getDueDateTimestamp();
@@ -267,14 +268,15 @@ public class NewAndEditTaskActivity extends Activity {
 				}
 			}
 		});
-		
-//		if(checkBoxCompleted != null) {
-//			checkBoxCompleted.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-//				public void onCheckedChanged(CompoundButton arg0, boolean arg1) {
-//					
-//				}
-//			});
-//		}
+
+		// if(checkBoxCompleted != null) {
+		// checkBoxCompleted.setOnCheckedChangeListener(new
+		// OnCheckedChangeListener() {
+		// public void onCheckedChanged(CompoundButton arg0, boolean arg1) {
+		//
+		// }
+		// });
+		// }
 	}
 
 	/**

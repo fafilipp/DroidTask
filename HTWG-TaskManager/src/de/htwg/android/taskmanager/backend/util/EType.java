@@ -16,5 +16,5 @@ public enum EType {
 	 * Type = task list.
 	 */
 	TASKLIST;
-	
+
 }
