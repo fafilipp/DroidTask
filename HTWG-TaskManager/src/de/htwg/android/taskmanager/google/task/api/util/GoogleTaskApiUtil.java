@@ -3,6 +3,7 @@ package de.htwg.android.taskmanager.google.task.api.util;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.APPLICATION_NAME;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.AUTH_TOKEN_TYPE;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.LOG_TAG;
+import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.SERVER_API_KEY;
 
 import java.io.IOException;
 
@@ -15,9 +16,9 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.google.api.client.auth.oauth2.draft10.AccessProtectedResource;
 import com.google.api.client.extensions.android2.AndroidHttp;
-import com.google.api.client.googleapis.auth.oauth2.draft10.GoogleAccessProtectedResource;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.googleapis.services.GoogleKeyInitializer;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.jackson.JacksonFactory;
 import com.google.api.services.tasks.Tasks;
@@ -28,7 +29,6 @@ import com.google.api.services.tasks.Tasks;
  * @author Filippelli, Gerhart, Gillet
  * 
  */
-@SuppressWarnings("deprecation")
 public class GoogleTaskApiUtil {
 
 	/**
@@ -54,10 +54,11 @@ public class GoogleTaskApiUtil {
 		String token = amFuture.getResult().getString(AccountManager.KEY_AUTHTOKEN);
 		Log.d(LOG_TAG, "token == null -> " + (token == null));
 		HttpTransport transport = AndroidHttp.newCompatibleTransport();
-		AccessProtectedResource accessProtectedResource = new GoogleAccessProtectedResource(token);
-		Tasks.Builder builder = new Tasks.Builder(transport, new JacksonFactory(), accessProtectedResource);
+		GoogleCredential credential = new GoogleCredential();
+		credential.setAccessToken(token);
+		Tasks.Builder builder = new Tasks.Builder(transport, new JacksonFactory(), credential);
 		builder.setApplicationName(APPLICATION_NAME);
-		builder.setJsonHttpRequestInitializer(new GoogleTaskJsonHttpRequestInitializer());
+		builder.setJsonHttpRequestInitializer(new GoogleKeyInitializer(SERVER_API_KEY));
 		Tasks service = builder.build();
 		return service;
 	}
