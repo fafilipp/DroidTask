@@ -1,6 +1,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
-       
+    <item
+        android:id="@+id/temperature"
+        android:showAsAction="always"
+        android:icon="@android:drawable/ic_menu_recent_history"
+        android:title="@string/temperature"/>
+    
     <item
         android:id="@+id/sync"
         android:icon="@drawable/ic_action_refresh"
@@ -12,5 +17,5 @@
         android:icon="@android:drawable/ic_menu_add"
         android:showAsAction="always"
         android:title="@string/add"/>
-    
+
 </menu>

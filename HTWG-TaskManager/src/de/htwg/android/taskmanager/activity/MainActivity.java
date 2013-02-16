@@ -14,6 +14,7 @@ import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQ
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQUEST_CODE_NEW_ACTIVITY;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQUEST_CODE_SHOW_ACTIVITY;
 
+import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
@@ -24,6 +25,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.app.ExpandableListActivity;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -45,6 +47,7 @@ import de.htwg.android.taskmanager.backend.database.DatabaseHandler;
 import de.htwg.android.taskmanager.backend.entity.LocalTask;
 import de.htwg.android.taskmanager.backend.entity.LocalTaskList;
 import de.htwg.android.taskmanager.backend.util.EType;
+import de.htwg.android.taskmanager.bluetooth.ArduinoConnector;
 import de.htwg.android.taskmanager.google.task.api.GoogleSyncManager;
 
 /**
@@ -348,7 +351,30 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.activity_main, menu);
-		return true;
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	/**
+	 * Checks if the Bluetooth device is not available or not activated.
+	 * 
+	 * @return true if the Bluetooth device is not available and not activated.
+	 */
+	private boolean isBluetoothDisabled() {
+		BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+		return (bluetoothAdapter == null || !bluetoothAdapter.isEnabled());
+	}
+
+	/**
+	 * Hide Temperature Icon if Bluetooth is disabled.
+	 */
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		if (isBluetoothDisabled()) {
+			menu.findItem(R.id.temperature).setVisible(false);
+		} else {
+			menu.findItem(R.id.temperature).setVisible(true);
+		}
+		return super.onPrepareOptionsMenu(menu);
 	}
 
 	/**
@@ -376,7 +402,8 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 	/**
 	 * Default onOptionsItemSelected Method for this Activity. Calls
 	 * createAddDialog method if clicking on the add button. The sync button
-	 * starts the sync with the Google Api using an AsyncTask.
+	 * starts the sync with the Google Api using an AsyncTask. The temperature
+	 * starts the temperature measurement with arduino.
 	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -387,8 +414,24 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 		case R.id.sync:
 			startSync();
 			break;
+		case R.id.temperature:
+			startTemperatureMeasurement();
+			break;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	private void startTemperatureMeasurement() {
+		try {
+			if(isBluetoothDisabled()) {
+				Toast.makeText(this, "Bluetooth is disabled on device, please activate.", Toast.LENGTH_LONG).show();
+			} else {
+				// TODO: show devices --> select arduino --> connect to arduino --> input measure times --> send measure times to arduino --> wait for response.
+				new ArduinoConnector().showDevices(this);
+			}
+		} catch (IOException e) {
+			Log.e("IOException", e.getMessage(), e);
+		}
 	}
 
 	/**
@@ -405,6 +448,8 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 				getExpandableListView().expandGroup(groupToExpand);
 			}
 		}
+		// reload options menu
+		invalidateOptionsMenu();
 	}
 
 	/**

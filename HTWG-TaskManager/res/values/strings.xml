@@ -8,7 +8,8 @@
     <string name="edit">Edit</string>
     <string name="save">Save</string>
     <string name="add">Add</string>
-    <string name="sync">Sync</string>
+    <string name="sync">Start Sync</string>
+    <string name="temperature">Measure Temperature</string>
     <string name="delete">Delete</string>
     <string name="task">Task</string>
     <string name="tasklist">Tasklist</string>
