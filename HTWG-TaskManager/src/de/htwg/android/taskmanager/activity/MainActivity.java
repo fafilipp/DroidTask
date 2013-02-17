@@ -9,34 +9,23 @@ import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACT
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_KEY_TASK_ID;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.ACTIVITY_KEY_TASK_TITLE;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.GOOGLE_ACCOUNT_TYPE;
-import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.LOG_TAG;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQUEST_CODE_EDIT_ACTIVITY;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQUEST_CODE_NEW_ACTIVITY;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQUEST_CODE_SHOW_ACTIVITY;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.UUID;
 
 import android.R.drawable;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.app.ExpandableListActivity;
-import android.app.ProgressDialog;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -45,15 +34,12 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
-import android.widget.ListView;
 import android.widget.RadioGroup;
 import android.widget.Toast;
+import de.htwg.android.taskmanager.adapter.ArduinoTemperatureMeasurement;
 import de.htwg.android.taskmanager.adapter.TaskListAdapter;
 import de.htwg.android.taskmanager.backend.database.DatabaseHandler;
 import de.htwg.android.taskmanager.backend.entity.LocalTask;
@@ -90,6 +76,11 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 	private Set<String> expandedTaskLists = new TreeSet<String>();
 
 	/**
+	 * The ArduinoTemperatureMeasurement process variable
+	 */
+	private ArduinoTemperatureMeasurement arduinoTemperatureMeasurement = new ArduinoTemperatureMeasurement(this);
+
+	/**
 	 * A new task list will be created and finally add to the database (using
 	 * the database handler object).
 	 * 
@@ -101,35 +92,6 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 		taskList.setTitle(title);
 		dbHandler.addTaskList(taskList);
 		Toast.makeText(this, String.format("Tasklist '%s' created.", title), Toast.LENGTH_LONG).show();
-	}
-
-	/**
-	 * Connect to the selected BluetoothDevice from the ListView.
-	 * 
-	 * @param bluetoothDevice
-	 *            the selected BluetoothDevice.
-	 */
-	private void connectToBluetoothDevice(BluetoothDevice bluetoothDevice) {
-		BluetoothSocket socket = null;
-		try {
-			socket = bluetoothDevice.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
-			socket.connect();
-			// if no exception thrown, connection is established
-			Toast.makeText(this, String.format("Connected to device %s.", bluetoothDevice.getName()), Toast.LENGTH_LONG).show();
-			// OutputStream os = socket.getOutputStream();
-			// os.write("Das ist ein Test".getBytes());
-		} catch (IOException e) {
-			Toast.makeText(this, String.format("Can't establish connection to device %s.", bluetoothDevice.getName()), Toast.LENGTH_LONG)
-					.show();
-		} finally {
-			// close the connection afterwards
-			try {
-				if (socket != null) {
-					socket.close();
-				}
-			} catch (IOException e) {
-			}
-		}
 	}
 
 	/**
@@ -183,38 +145,6 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 
 		// shows the dialog
 		addDialog.show();
-	}
-
-	/**
-	 * Creates an selection dialog for selecting the BluetoothDevice, which
-	 * provides the temperature (Arduino)
-	 * 
-	 * @param devices
-	 *            the list of available devices.
-	 */
-	private void createBluetoothDeviceSelectDialog(final List<BluetoothDevice> devices) {
-		String[] deviceArray = new String[devices.size()];
-		for (int i = 0; i < deviceArray.length; i++) {
-			deviceArray[i] = devices.get(i).getName();
-		}
-		AlertDialog.Builder bluetoothDialog = new AlertDialog.Builder(this);
-		bluetoothDialog.setTitle("Select Device");
-		LayoutInflater layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		View view = layoutInflater.inflate(R.layout.bluetooth_discovery, null);
-		final ListView listView = (ListView) view.findViewById(R.id.deviceList);
-		ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, deviceArray);
-		listView.setAdapter(arrayAdapter);
-
-		listView.setOnItemClickListener(new OnItemClickListener() {
-			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-				// connect to the selected device
-				BluetoothDevice bluetoothDevice = devices.get(arg2);
-				connectToBluetoothDevice(bluetoothDevice);
-			}
-		});
-		bluetoothDialog.setView(view);
-		bluetoothDialog.create();
-		bluetoothDialog.show();
 	}
 
 	/**
@@ -303,16 +233,6 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 	}
 
 	/**
-	 * Checks if the Bluetooth device is not available or not activated.
-	 * 
-	 * @return true if the Bluetooth device is not available and not activated.
-	 */
-	private boolean isBluetoothDisabled() {
-		BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-		return (bluetoothAdapter == null || !bluetoothAdapter.isEnabled());
-	}
-
-	/**
 	 * After a called activity finishes, this method will be called. This method
 	 * performs a reload of the expanded list view. Before doing this it will
 	 * show up a notification for the user, to confirm that the called operation
@@ -397,6 +317,8 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 		setListAdapter(listAdapter);
 		ExpandableListView list = (ExpandableListView) findViewById(android.R.id.list);
 		registerForContextMenu(list);
+		
+		arduinoTemperatureMeasurement.registerBluetoothStateChangeListener();
 	}
 
 	/**
@@ -474,7 +396,7 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 			startSync();
 			break;
 		case R.id.temperature:
-			startBluetoothProcess();
+			arduinoTemperatureMeasurement.startBluetoothProcess();
 			break;
 		}
 		return super.onOptionsItemSelected(item);
@@ -485,7 +407,7 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 	 */
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-		if (isBluetoothDisabled()) {
+		if (arduinoTemperatureMeasurement.isBluetoothDisabled()) {
 			menu.findItem(R.id.temperature).setVisible(false);
 		} else {
 			menu.findItem(R.id.temperature).setVisible(true);
@@ -564,66 +486,6 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 	}
 
 	/**
-	 * Starts the Bluetooth procedure. It will follow following sequence: search
-	 * devices --> show devices --> (user) select arduino --> connect to arduino
-	 * --> input measure times --> send measure times to arduino --> wait for
-	 * temperature response.
-	 */
-	private void startBluetoothProcess() {
-		// If Bluetooth is unavailable show a toast message.
-		if (isBluetoothDisabled()) {
-			Toast.makeText(this, "Bluetooth is disabled on device, please activate.", Toast.LENGTH_LONG).show();
-		} else {
-			// shows up an progress dialog as long as the device is discovering
-			// for bluetooth devices
-			final ProgressDialog progressDialog = ProgressDialog.show(this, "Please wait", "Searching Bluetooth devices", true);
-
-			final List<BluetoothDevice> devices = new ArrayList<BluetoothDevice>();
-			BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-			// Get paired devices
-			Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
-			if (pairedDevices.size() > 0) {
-				for (BluetoothDevice device : pairedDevices) {
-					devices.add(device);
-					Log.i("Device found", device.getName() + " - " + device.getAddress());
-				}
-			}
-
-			// Discover visible devices
-			final BroadcastReceiver discoverReceiver = new BroadcastReceiver() {
-				public void onReceive(Context context, Intent intent) {
-					BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-					devices.add(device);
-					Log.i("Device found", device.getName() + " - " + device.getAddress());
-				}
-			};
-			IntentFilter discoverFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-			registerReceiver(discoverReceiver, discoverFilter);
-
-			// React on discover finished event
-			final BroadcastReceiver actionFinishedReceiver = new BroadcastReceiver() {
-				public void onReceive(Context context, Intent intent) {
-					// unregister the receivers
-					unregisterReceiver(discoverReceiver);
-					unregisterReceiver(this);
-
-					// dismiss the progress dialog
-					progressDialog.dismiss();
-
-					// create the selection dialog
-					createBluetoothDeviceSelectDialog(devices);
-				}
-			};
-			IntentFilter actionFinishedFilter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-			registerReceiver(actionFinishedReceiver, actionFinishedFilter);
-
-			// start discovering
-			bluetoothAdapter.startDiscovery();
-		}
-	}
-
-	/**
 	 * Starts the NewAndEditActivity activity.
 	 * 
 	 * @param taskIdOrTitle
@@ -664,12 +526,12 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 	private void startSync() {
 		AccountManager accountManager = AccountManager.get(this);
 		Account[] accounts = accountManager.getAccountsByType(GOOGLE_ACCOUNT_TYPE);
-		Log.d(LOG_TAG, "Amount of Google accounts on device = " + accounts.length);
+		Log.d("Google Sync", "Amount of Google accounts on device = " + accounts.length);
 		if (accounts.length < 1) {
-			Log.i(LOG_TAG, "No Google accounts found, no sync possible.");
+			Log.i("Google Sync", "No Google accounts found, no sync possible.");
 			Toast.makeText(this, "No Google Account found on device.", Toast.LENGTH_LONG).show();
 		} else {
-			Log.d(LOG_TAG, "Selected Google account = " + accounts[0].name);
+			Log.d("Google Sync", "Selected Google account = " + accounts[0].name);
 			GoogleSyncManager googleSyncManager = new GoogleSyncManager(this, accounts[0]);
 			googleSyncManager.execute();
 		}

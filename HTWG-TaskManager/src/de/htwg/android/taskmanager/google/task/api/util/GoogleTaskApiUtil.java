@@ -2,7 +2,6 @@ package de.htwg.android.taskmanager.google.task.api.util;
 
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.APPLICATION_NAME;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.AUTH_TOKEN_TYPE;
-import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.LOG_TAG;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.SERVER_API_KEY;
 
 import java.io.IOException;
@@ -52,7 +51,7 @@ public class GoogleTaskApiUtil {
 		AccountManagerFuture<Bundle> amFuture = accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, null, activity,
 				new GoogleTaskAccountManagerCallback(), null);
 		String token = amFuture.getResult().getString(AccountManager.KEY_AUTHTOKEN);
-		Log.d(LOG_TAG, "token == null -> " + (token == null));
+		Log.d("Google Sync", "token == null -> " + (token == null));
 		HttpTransport transport = AndroidHttp.newCompatibleTransport();
 		GoogleCredential credential = new GoogleCredential();
 		credential.setAccessToken(token);

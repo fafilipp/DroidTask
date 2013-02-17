@@ -1,7 +1,5 @@
 package de.htwg.android.taskmanager.google.task.api;
 
-import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.LOG_TAG;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,11 +59,11 @@ public class GoogleTaskApiManager implements ITaskApiManager {
 		try {
 			GoogleTaskApiUtil asyncUtil = new GoogleTaskApiUtil();
 			Tasks service = asyncUtil.getTasksService(activity, account);
-			Log.d(LOG_TAG, "deleting task " + taskId + " from tasklist " + taskListId);
+			Log.d("Google Sync", "deleting task " + taskId + " from tasklist " + taskListId);
 			service.tasks().delete(taskListId, taskId).execute();
-			Log.d(LOG_TAG, "deleting task succeeded");
+			Log.d("Google Sync", "deleting task succeeded");
 		} catch (Exception e) {
-			Log.e(LOG_TAG, "exception thrown while deleting the task = (" + e.getClass().getName() + ")" + e.getMessage());
+			Log.e("Exception (deleteTask)", e.getMessage(), e);
 			throw new GoogleSyncException(e);
 		}
 	}
@@ -82,11 +80,11 @@ public class GoogleTaskApiManager implements ITaskApiManager {
 		try {
 			GoogleTaskApiUtil asyncUtil = new GoogleTaskApiUtil();
 			Tasks service = asyncUtil.getTasksService(activity, account);
-			Log.d(LOG_TAG, "deleting tasklist " + taskListId);
+			Log.d("Google Sync", "deleting tasklist " + taskListId);
 			service.tasklists().delete(taskListId).execute();
-			Log.d(LOG_TAG, "deleting tasklist succeeded");
+			Log.d("Google Sync", "deleting tasklist succeeded");
 		} catch (Exception e) {
-			Log.e(LOG_TAG, "exception thrown while deleting the tasklist = (" + e.getClass().getName() + ")" + e.getMessage());
+			Log.e("Exception (deleteTaskList)", e.getMessage(), e);
 			throw new GoogleSyncException(e);
 		}
 	}
@@ -102,13 +100,13 @@ public class GoogleTaskApiManager implements ITaskApiManager {
 		try {
 			GoogleTaskApiUtil asyncUtil = new GoogleTaskApiUtil();
 			Tasks service = asyncUtil.getTasksService(activity, account);
-			Log.d(LOG_TAG, "getting all task lists");
+			Log.d("Google Sync", "getting all task lists");
 			List<TaskList> list = service.tasklists().list().execute().getItems();
 			list = list == null ? new ArrayList<TaskList>() : list;
-			Log.d(LOG_TAG, "getting all task lists succeeded (size = " + list.size() + ")");
+			Log.d("Google Sync", "getting all task lists succeeded (size = " + list.size() + ")");
 			return list;
 		} catch (Exception e) {
-			Log.e(LOG_TAG, "exception thrown while getting all task lists = (" + e.getClass().getName() + ")" + e.getMessage());
+			Log.e("Exception (getTaskLists)", e.getMessage(), e);
 			throw new GoogleSyncException(e);
 		}
 	}
@@ -126,13 +124,13 @@ public class GoogleTaskApiManager implements ITaskApiManager {
 		try {
 			GoogleTaskApiUtil asyncUtil = new GoogleTaskApiUtil();
 			Tasks service = asyncUtil.getTasksService(activity, account);
-			Log.d(LOG_TAG, "getting all tasks for tasklist " + taskListId);
+			Log.d("Google Sync", "getting all tasks for tasklist " + taskListId);
 			List<Task> taskList = service.tasks().list(taskListId).execute().getItems();
 			taskList = taskList == null ? new ArrayList<Task>() : taskList;
-			Log.d(LOG_TAG, "getting all task lists succeeded (size = " + taskList.size() + ")");
+			Log.d("Google Sync", "getting all task lists succeeded (size = " + taskList.size() + ")");
 			return taskList;
 		} catch (Exception e) {
-			Log.e(LOG_TAG, "exception thrown while getting all tasks = (" + e.getClass().getName() + ")" + e.getMessage());
+			Log.e("Exception (getTasks)", e.getMessage(), e);
 			throw new GoogleSyncException(e);
 		}
 	}
@@ -152,12 +150,12 @@ public class GoogleTaskApiManager implements ITaskApiManager {
 		try {
 			GoogleTaskApiUtil asyncUtil = new GoogleTaskApiUtil();
 			Tasks service = asyncUtil.getTasksService(activity, account);
-			Log.d(LOG_TAG, "creating task in task list " + taskListId);
+			Log.d("Google Sync", "creating task in task list " + taskListId);
 			Task returnTask = service.tasks().insert(taskListId, task).execute();
-			Log.d(LOG_TAG, "creating task succeeded (id = " + returnTask.getId() + ")");
+			Log.d("Google Sync", "creating task succeeded (id = " + returnTask.getId() + ")");
 			return returnTask;
 		} catch (Exception e) {
-			Log.e(LOG_TAG, "exception thrown while creating/inserting the task = (" + e.getClass().getName() + ")" + e.getMessage());
+			Log.e("Exception (insertTask)", e.getMessage(), e);
 			throw new GoogleSyncException(e);
 		}
 	}
@@ -175,14 +173,14 @@ public class GoogleTaskApiManager implements ITaskApiManager {
 		try {
 			GoogleTaskApiUtil asyncUtil = new GoogleTaskApiUtil();
 			Tasks service = asyncUtil.getTasksService(activity, account);
-			Log.d(LOG_TAG, "creating tasklist " + title);
+			Log.d("Google Sync", "creating tasklist " + title);
 			TaskList temp = new TaskList();
 			temp.setTitle(title);
 			TaskList taskList = service.tasklists().insert(temp).execute();
-			Log.d(LOG_TAG, "creating tasklist succeeded (id = " + taskList.getId() + ")");
+			Log.d("Google Sync", "creating tasklist succeeded (id = " + taskList.getId() + ")");
 			return taskList;
 		} catch (Exception e) {
-			Log.e(LOG_TAG, "exception thrown while creating/inserting the tasklist = (" + e.getClass().getName() + ")" + e.getMessage());
+			Log.e("Exception (insertTaskList)", e.getMessage(), e);
 			throw new GoogleSyncException(e);
 		}
 	}
@@ -204,12 +202,12 @@ public class GoogleTaskApiManager implements ITaskApiManager {
 		try {
 			GoogleTaskApiUtil asyncUtil = new GoogleTaskApiUtil();
 			Tasks service = asyncUtil.getTasksService(activity, account);
-			Log.d(LOG_TAG, "updating task " + taskId + " in task list " + taskListId);
+			Log.d("Google Sync", "updating task " + taskId + " in task list " + taskListId);
 			Task returnTask = service.tasks().update(taskListId, taskId, task).execute();
-			Log.d(LOG_TAG, "updating task succeeded (id = " + returnTask.getId() + ")");
+			Log.d("Google Sync", "updating task succeeded (id = " + returnTask.getId() + ")");
 			return returnTask;
 		} catch (Exception e) {
-			Log.e(LOG_TAG, "exception thrown while updating the task = (" + e.getClass().getName() + ")" + e.getMessage());
+			Log.e("Exception (updateTask)", e.getMessage(), e);
 			throw new GoogleSyncException(e);
 		}
 
@@ -230,12 +228,12 @@ public class GoogleTaskApiManager implements ITaskApiManager {
 		try {
 			GoogleTaskApiUtil asyncUtil = new GoogleTaskApiUtil();
 			Tasks service = asyncUtil.getTasksService(activity, account);
-			Log.d(LOG_TAG, "updating tasklist " + taskList.getId());
+			Log.d("Google Sync", "updating tasklist " + taskList.getId());
 			TaskList returnTaskList = service.tasklists().update(taskListId, taskList).execute();
-			Log.d(LOG_TAG, "updating tasklist succeeded (id = " + returnTaskList.getId() + ")");
+			Log.d("Google Sync", "updating tasklist succeeded (id = " + returnTaskList.getId() + ")");
 			return returnTaskList;
 		} catch (Exception e) {
-			Log.e(LOG_TAG, "exception thrown while updating the tasklist = (" + e.getClass().getName() + ")" + e.getMessage());
+			Log.e("Exception (updateTaskList)", e.getMessage(), e);
 			throw new GoogleSyncException(e);
 		}
 	}
