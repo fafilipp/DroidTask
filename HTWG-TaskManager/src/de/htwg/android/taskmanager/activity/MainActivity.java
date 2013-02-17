@@ -13,6 +13,7 @@ import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQ
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQUEST_CODE_NEW_ACTIVITY;
 import static de.htwg.android.taskmanager.util.constants.GoogleTaskConstants.REQUEST_CODE_SHOW_ACTIVITY;
 
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
@@ -431,6 +432,23 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 		}
 		// reload options menu
 		invalidateOptionsMenu();
+	}
+	
+	public void createArduinoTask() {
+		List<LocalTaskList> localTaskLists = dbHandler.getTaskLists();
+		LocalTaskList taskList = null;
+		if(localTaskLists.size() > 1) {
+			taskList = localTaskLists.get(0);
+		} else {
+			taskList = new LocalTaskList();
+			taskList.setTitle("Arduino");
+			dbHandler.addTaskList(taskList);
+		}
+		LocalTask arduinoTask = new LocalTask();
+		arduinoTask.setTitle("Heizung anmachen");
+		dbHandler.addTask(taskList, arduinoTask);
+		
+		reloadTaskList();
 	}
 
 	/**
