@@ -30,12 +30,165 @@ import android.widget.Toast;
 import de.htwg.android.taskmanager.activity.MainActivity;
 import de.htwg.android.taskmanager.activity.R;
 
+/**
+ * This class manages the Bluetooth communication with Arduino
+ * 
+ * @author Filippelli, Gerhart, Gillet
+ * 
+ */
 public class ArduinoTemperatureMeasurement {
 
+	/**
+	 * Link to activity variable.
+	 */
 	private MainActivity activity;
 
+	/**
+	 * The ByteArray Length for the InputStream packages.
+	 */
+	private static final int BYTE_ARRAY_LENGTH = 2048;
+
+	/**
+	 * The alert for the temperature (if temperature is lesser then this a task
+	 * is created).
+	 */
+	private static final float TEMPERATURE_ALERT = 20.00f;
+
+	/**
+	 * Creates a new object passing the activity
+	 * 
+	 * @param activity
+	 *            the mainactivity object
+	 */
 	public ArduinoTemperatureMeasurement(MainActivity activity) {
 		this.activity = activity;
+	}
+
+	/**
+	 * Connect to the selected BluetoothDevice from the ListView.
+	 * 
+	 * @param bluetoothDevice
+	 *            the selected BluetoothDevice.
+	 */
+	private void connectToBluetoothDevice(BluetoothDevice bluetoothDevice) {
+		BluetoothSocket socket = null;
+		try {
+			socket = bluetoothDevice.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
+			socket.connect();
+			// if no exception thrown, connection is established
+			Toast.makeText(activity, String.format("Connected to device %s.", bluetoothDevice.getName()), Toast.LENGTH_LONG).show();
+			createMeasurementInputDialog(socket);
+			// OutputStream os = socket.getOutputStream();
+			// os.write("Das ist ein Test".getBytes());
+		} catch (IOException e) {
+			Toast.makeText(activity, String.format("Can't establish connection to device %s.", bluetoothDevice.getName()),
+					Toast.LENGTH_LONG).show();
+		}
+	}
+
+	/**
+	 * Creates an selection dialog for selecting the BluetoothDevice, which
+	 * provides the temperature (Arduino)
+	 * 
+	 * @param devices
+	 *            the list of available devices.
+	 */
+	private void createBluetoothDeviceSelectDialog(final List<BluetoothDevice> devices) {
+		String[] deviceArray = new String[devices.size()];
+		for (int i = 0; i < deviceArray.length; i++) {
+			deviceArray[i] = devices.get(i).getName();
+		}
+		AlertDialog.Builder bluetoothDialog = new AlertDialog.Builder(activity);
+		bluetoothDialog.setTitle("Select Device");
+		LayoutInflater layoutInflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		View view = layoutInflater.inflate(R.layout.bluetooth_discovery, null);
+		final ListView listView = (ListView) view.findViewById(R.id.deviceList);
+		ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(activity, android.R.layout.simple_list_item_1, deviceArray);
+		listView.setAdapter(arrayAdapter);
+		bluetoothDialog.setView(view);
+
+		final AlertDialog alertDialog = bluetoothDialog.create();
+		alertDialog.show();
+
+		listView.setOnItemClickListener(new OnItemClickListener() {
+			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+				// connect to the selected device
+				BluetoothDevice bluetoothDevice = devices.get(arg2);
+				connectToBluetoothDevice(bluetoothDevice);
+				alertDialog.dismiss();
+			}
+		});
+	}
+
+	/**
+	 * Creates an selection dialog for selecting the BluetoothDevice, which
+	 * provides the temperature (Arduino)
+	 * 
+	 * @param devices
+	 *            the list of available devices.
+	 */
+	private void createMeasurementInputDialog(final BluetoothSocket socket) {
+		AlertDialog.Builder bluetoothDialog = new AlertDialog.Builder(activity);
+		bluetoothDialog.setTitle("Number of temperature measurements");
+		LayoutInflater layoutInflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		View view = layoutInflater.inflate(R.layout.measurements_dialog, null);
+		final EditText etNumber = (EditText) view.findViewById(R.id.et_number);
+		etNumber.setText("5");
+		bluetoothDialog.setPositiveButton("Send", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				String text = etNumber.getText().toString();
+				try {
+					OutputStream os = socket.getOutputStream();
+					final InputStream is = socket.getInputStream();
+					os.write(text.getBytes());
+					new Thread(new Runnable() {
+						public void run() {
+							try {
+								final byte[] bytes = new byte[BYTE_ARRAY_LENGTH];
+								StringBuilder b = new StringBuilder();
+								while (is.read(bytes) > -1) {
+									char currentChar = 0;
+									for (int i = 0; i < bytes.length; i++) {
+										if (bytes[i] == 0) {
+											Log.i("InputStream (i)", String.valueOf(i));
+											break;
+										}
+										currentChar = (char) bytes[i];
+										if (currentChar != 's') {
+											b.append(currentChar);
+										}
+										Log.i("InputStream (char)", String.valueOf(currentChar));
+									}
+									if (currentChar == 's') {
+										break;
+									}
+								}
+								socket.close();
+								final String value = b.toString();
+								Log.i("InputStream (read temperature)", b.toString());
+								final float temperature = Float.parseFloat(value);
+								activity.runOnUiThread(new Runnable() {
+									public void run() {
+										Toast.makeText(activity, String.format("The temperature is %s", value), Toast.LENGTH_LONG).show();
+										if (temperature < TEMPERATURE_ALERT) {
+											activity.createArduinoTask();
+										}
+									}
+								});
+							} catch (IOException e) {
+								Log.e("IOException", e.getMessage(), e);
+							}
+						}
+					}).start();
+				} catch (IOException e) {
+					Log.e("IOException", e.getMessage(), e);
+				}
+				dialog.dismiss();
+			}
+		});
+		bluetoothDialog.setView(view);
+		bluetoothDialog.create();
+		bluetoothDialog.show();
 	}
 
 	/**
@@ -48,17 +201,21 @@ public class ArduinoTemperatureMeasurement {
 		return (bluetoothAdapter == null || !bluetoothAdapter.isEnabled());
 	}
 
+	/**
+	 * Registers the State Change Listener.
+	 */
 	public void registerBluetoothStateChangeListener() {
 		final BroadcastReceiver stateReceiver = new BroadcastReceiver() {
 			public void onReceive(Context context, Intent intent) {
 				final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
 				switch (state) {
-				case BluetoothAdapter.STATE_TURNING_OFF:
-				case BluetoothAdapter.STATE_TURNING_ON:
-					break;
 				case BluetoothAdapter.STATE_OFF:
 				case BluetoothAdapter.STATE_ON:
 					activity.invalidateOptionsMenu();
+					break;
+				case BluetoothAdapter.STATE_TURNING_OFF:
+				case BluetoothAdapter.STATE_TURNING_ON:
+				default:
 					break;
 				}
 			}
@@ -125,132 +282,6 @@ public class ArduinoTemperatureMeasurement {
 			// start discovering
 			bluetoothAdapter.startDiscovery();
 		}
-	}
-
-	/**
-	 * Creates an selection dialog for selecting the BluetoothDevice, which
-	 * provides the temperature (Arduino)
-	 * 
-	 * @param devices
-	 *            the list of available devices.
-	 */
-	private void createBluetoothDeviceSelectDialog(final List<BluetoothDevice> devices) {
-		String[] deviceArray = new String[devices.size()];
-		for (int i = 0; i < deviceArray.length; i++) {
-			deviceArray[i] = devices.get(i).getName();
-		}
-		AlertDialog.Builder bluetoothDialog = new AlertDialog.Builder(activity);
-		bluetoothDialog.setTitle("Select Device");
-		LayoutInflater layoutInflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		View view = layoutInflater.inflate(R.layout.bluetooth_discovery, null);
-		final ListView listView = (ListView) view.findViewById(R.id.deviceList);
-		ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(activity, android.R.layout.simple_list_item_1, deviceArray);
-		listView.setAdapter(arrayAdapter);
-		bluetoothDialog.setView(view);
-
-		final AlertDialog alertDialog = bluetoothDialog.create();
-		alertDialog.show();
-
-		listView.setOnItemClickListener(new OnItemClickListener() {
-			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-				// connect to the selected device
-				BluetoothDevice bluetoothDevice = devices.get(arg2);
-				connectToBluetoothDevice(bluetoothDevice);
-				alertDialog.dismiss();
-			}
-		});
-	}
-
-	/**
-	 * Connect to the selected BluetoothDevice from the ListView.
-	 * 
-	 * @param bluetoothDevice
-	 *            the selected BluetoothDevice.
-	 */
-	private void connectToBluetoothDevice(BluetoothDevice bluetoothDevice) {
-		BluetoothSocket socket = null;
-		try {
-			socket = bluetoothDevice.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
-			socket.connect();
-			// if no exception thrown, connection is established
-			Toast.makeText(activity, String.format("Connected to device %s.", bluetoothDevice.getName()), Toast.LENGTH_LONG).show();
-			createMeasurementInputDialog(socket);
-			// OutputStream os = socket.getOutputStream();
-			// os.write("Das ist ein Test".getBytes());
-		} catch (IOException e) {
-			Toast.makeText(activity, String.format("Can't establish connection to device %s.", bluetoothDevice.getName()),
-					Toast.LENGTH_LONG).show();
-		}
-	}
-
-	/**
-	 * Creates an selection dialog for selecting the BluetoothDevice, which
-	 * provides the temperature (Arduino)
-	 * 
-	 * @param devices
-	 *            the list of available devices.
-	 */
-	private void createMeasurementInputDialog(final BluetoothSocket socket) {
-		AlertDialog.Builder bluetoothDialog = new AlertDialog.Builder(activity);
-		bluetoothDialog.setTitle("Number of temperature measurements");
-		LayoutInflater layoutInflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		View view = layoutInflater.inflate(R.layout.measurements_dialog, null);
-		final EditText etNumber = (EditText) view.findViewById(R.id.et_number);
-		etNumber.setText("5");
-		bluetoothDialog.setPositiveButton("Send", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int which) {
-				String text = etNumber.getText().toString();
-				try {
-					OutputStream os = socket.getOutputStream();
-					final InputStream is = socket.getInputStream();
-					os.write(text.getBytes());
-					new Thread(new Runnable() {
-						public void run() {
-							try {
-								final byte[] bytes = new byte[2048];
-								StringBuilder b = new StringBuilder();
-								while (is.read(bytes) > -1) {
-									char currentChar = 0;
-									for (int i = 0; i < bytes.length; i++) {
-										if (bytes[i] == 0) {
-											Log.i("InputStream (i)", String.valueOf(i));
-											break;
-										}
-										currentChar = (char) bytes[i];
-										if (currentChar != 's') {
-											b.append(currentChar);
-										}
-										Log.i("InputStream (char)", String.valueOf(currentChar));
-									}
-									if (currentChar == 's') {
-										break;
-									}
-								}
-								final String value = b.toString();
-								Log.i("InputStream (read temperature)", b.toString());
-								final float temperature = Float.parseFloat(value);
-								activity.runOnUiThread(new Runnable() {
-									public void run() {
-										Toast.makeText(activity, String.format("The temperature is %s", value), Toast.LENGTH_LONG).show();
-										if(temperature < 30.00) {
-											activity.createArduinoTask();
-										}
-									}
-								});
-							} catch (IOException e) {
-								Log.e("IOException", e.getMessage(), e);
-							}
-						}
-					}).start();
-				} catch (IOException e) {
-					Log.e("IOException", e.getMessage(), e);
-				}
-				dialog.dismiss();
-			}
-		});
-		bluetoothDialog.setView(view);
-		bluetoothDialog.create();
-		bluetoothDialog.show();
 	}
 
 }

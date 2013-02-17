@@ -229,8 +229,7 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 			}
 		}
 
-		// TODO: remote delete case is too risky, so no remote delete done at
-		// this point.
+		// remote delete case is too risky, so no remote delete done at this point.
 	}
 
 	/**
@@ -275,7 +274,7 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 						remoteTask.setTitle(localTask.getTitle());
 						remoteTask.setNotes(localTask.getNotes());
 						remoteTask.setStatus(EStatus.transformStatus(localTask.getStatus()));
-						// TODO: Due and Completed not working for tasks.
+						// due and Completed not working for tasks.
 						// remoteTask.setDue(transformDateTime(localTask.getDue()));
 						// remoteTask.setCompleted(transformDateTime(localTask.getCompleted()));
 						// sending update command to tasks api
@@ -305,7 +304,7 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 				remoteTask.setTitle(newLocalTask.getTitle());
 				remoteTask.setNotes(newLocalTask.getNotes());
 				remoteTask.setStatus(EStatus.transformStatus(newLocalTask.getStatus()));
-				// TODO: Due and Completed not working for tasks.
+				// due and Completed not working for tasks.
 				// remoteTask.setDue(transformDateTime(newLocalTask.getDue()));
 				// remoteTask.setCompleted(transformDateTime(newLocalTask.getCompleted()));
 				Task newRemoteTask = apiManager.insertTask(localTaskList.getGoogleId(), remoteTask);
@@ -325,7 +324,7 @@ public class GoogleSyncManager extends AsyncTask<Void, Void, Void> {
 				}
 			}
 
-			// TODO: remote delete case is too risky, so no remote delete done
+			// remote delete case is too risky, so no remote delete done
 			// at this point.
 		}
 	}

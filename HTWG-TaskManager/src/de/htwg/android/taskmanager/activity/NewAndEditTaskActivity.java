@@ -199,6 +199,7 @@ public class NewAndEditTaskActivity extends Activity {
 		case COMPLETED:
 			checkBoxCompleted.setChecked(true);
 			break;
+		default: break;
 		}
 		if (task.getDue() == 0) {
 			dueDateGiven.setChecked(false);
@@ -297,6 +298,8 @@ public class NewAndEditTaskActivity extends Activity {
 		switch (item.getItemId()) {
 		case R.id.save:
 			addOrUpdateTask();
+			break;
+		default:
 			break;
 		}
 		return super.onOptionsItemSelected(item);

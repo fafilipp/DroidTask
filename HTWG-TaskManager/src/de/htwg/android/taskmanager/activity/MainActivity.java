@@ -318,7 +318,7 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 		setListAdapter(listAdapter);
 		ExpandableListView list = (ExpandableListView) findViewById(android.R.id.list);
 		registerForContextMenu(list);
-		
+
 		arduinoTemperatureMeasurement.registerBluetoothStateChangeListener();
 	}
 
@@ -399,6 +399,8 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 		case R.id.temperature:
 			arduinoTemperatureMeasurement.startBluetoothProcess();
 			break;
+		default:
+			break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -433,11 +435,14 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 		// reload options menu
 		invalidateOptionsMenu();
 	}
-	
+
+	/**
+	 * Creates a Task for temperature
+	 */
 	public void createArduinoTask() {
 		List<LocalTaskList> localTaskLists = dbHandler.getTaskLists();
 		LocalTaskList taskList = null;
-		if(localTaskLists.size() > 1) {
+		if (localTaskLists.size() > 1) {
 			taskList = localTaskLists.get(0);
 		} else {
 			taskList = new LocalTaskList();
@@ -447,7 +452,7 @@ public class MainActivity extends ExpandableListActivity implements Observer {
 		LocalTask arduinoTask = new LocalTask();
 		arduinoTask.setTitle("Heizung anmachen");
 		dbHandler.addTask(taskList, arduinoTask);
-		
+
 		reloadTaskList();
 	}
 

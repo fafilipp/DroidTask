@@ -118,6 +118,8 @@ public class TaskActivity extends Activity {
 			editTaskIntent.putExtra(ACTIVITY_KEY_EDIT, true);
 			startActivityForResult(editTaskIntent, REQUEST_CODE_EDIT_ACTIVITY);
 			return true;
+		default:
+			break;
 		}
 		return super.onOptionsItemSelected(item);
 	}

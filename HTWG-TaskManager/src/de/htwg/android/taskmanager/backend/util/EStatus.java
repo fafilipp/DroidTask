@@ -21,12 +21,12 @@ public enum EStatus {
 	 * The Google Tasks API NEEDS_ACTION literal (defined as String
 	 * "needsAction").
 	 */
-	private final static String NEEDS_ACTION_STRING = "needsAction";
+	private static final String NEEDS_ACTION_STRING = "needsAction";
 
 	/**
 	 * The Google Tasks API COMPLETED literal (defined as String "completed").
 	 */
-	private final static String COMPLETED_STRING = "completed";
+	private static final String COMPLETED_STRING = "completed";
 
 	/**
 	 * Transforms a EStatus String representation (in String representation)
